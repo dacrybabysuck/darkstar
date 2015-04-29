@@ -16,6 +16,7 @@ require("scripts/zones/Bastok_Mines/TextIDs");
 -----------------------------------
 
 function onTrade(player,npc,trade)
+
 end;
 
 -----------------------------------
@@ -42,5 +43,7 @@ end;
 function onEventFinish(player,csid,option)
 	-- printf("CSID: %u",csid);
 	-- printf("RESULT: %u",option);
+
+    player:setPos(-459.942, -20.048, -4.999, 52, 52);
 end;
 
