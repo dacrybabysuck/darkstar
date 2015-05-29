@@ -256,7 +256,7 @@ void CAIMobDummy::ActionRoaming()
                 luautils::OnMobRoamAction(m_PMob);
                 m_LastActionTime = m_Tick;
             }
-            else if (m_PMob->CanRoam() && m_PPathFind->RoamAround(m_PMob->m_SpawnPoint, m_PMob->m_roamFlags))
+            else if (m_PMob->CanRoam() && m_PPathFind->RoamAround(m_PMob->m_SpawnPoint, m_PMob->m_roamDistance, m_PMob->m_roamFlags))
             {
 
                 if (m_PMob->m_roamFlags & ROAMFLAG_WORM)
@@ -2111,22 +2111,22 @@ bool CAIMobDummy::CanDetectTarget(CBattleEntity* PTarget, bool forceSight)
 
 	if ((aggro & AGGRO_DETECT_LOWHP) && PTarget->GetHPP() < 75)
     {
-        return true;
+        return CanSeePoint(PTarget->loc.p);
     }
 
 	if ((aggro & AGGRO_DETECT_MAGIC) && PTarget->PBattleAI->GetCurrentAction() == ACTION_MAGIC_CASTING && PTarget->PBattleAI->GetCurrentSpell()->hasMPCost())
     {
-        return true;
+        return CanSeePoint(PTarget->loc.p);
     }
 
 	if ((aggro & AGGRO_DETECT_WEAPONSKILL) && PTarget->PBattleAI->GetCurrentAction() == ACTION_WEAPONSKILL_FINISH)
     {
-        return true;
+        return CanSeePoint(PTarget->loc.p);
     }
 
 	if ((aggro & AGGRO_DETECT_JOBABILITY) && PTarget->PBattleAI->GetCurrentAction() == ACTION_JOBABILITY_FINISH)
     {
-        return true;
+        return CanSeePoint(PTarget->loc.p);
     }
 
     return false;
