@@ -18374,6 +18374,7 @@ INSERT INTO `item_mods` VALUES (17464, 8, 3);
 INSERT INTO `item_mods` VALUES (17464, 13, 3);
 INSERT INTO `item_mods` VALUES (17465, 12, 1);
 INSERT INTO `item_mods` VALUES (17465, 13, 1);
+INSERT INTO `item_mods` VALUES (17466, 313, 1);
 INSERT INTO `item_mods` VALUES (17466, 374, 1);
 INSERT INTO `item_mods` VALUES (17467, 345, 1000);
 INSERT INTO `item_mods` VALUES (17468, 13, 2);
@@ -19519,6 +19520,15 @@ INSERT INTO `item_mods` VALUES (18159, 431, 1); -- Additonal effect: Attack Down
 -- Spartan Bullet
 -- -------------------------------------------------------
 INSERT INTO `item_mods` VALUES (18160, 431, 1); -- Additional effect: Stun
+
+-- -------------------------------------------------------
+-- Winds
+-- Hidden effect: removes Sky gods additional effect damage.
+-- -------------------------------------------------------
+INSERT INTO `item_mods` VALUES (18161, 431, 1);
+INSERT INTO `item_mods` VALUES (18162, 431, 1);
+INSERT INTO `item_mods` VALUES (18163, 431, 1);
+INSERT INTO `item_mods` VALUES (18164, 431, 1);
 
 INSERT INTO `item_mods` VALUES (18166, 3, 1);
 INSERT INTO `item_mods` VALUES (18166, 10, 1);
