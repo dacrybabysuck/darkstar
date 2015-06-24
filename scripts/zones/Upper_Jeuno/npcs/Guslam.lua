@@ -18,7 +18,8 @@ require("scripts/zones/Upper_Jeuno/TextIDs");
 -----------------------------------
 
 function onTrade(player,npc,trade)
-end; 
+		player:setPos(63, -24, 21, 0, 161);
+end;
 
 -----------------------------------
 -- If it's the first Hands quest
