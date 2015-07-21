@@ -42,6 +42,8 @@ function onTrigger(player,npc)
 		player:startEvent(0x0096); -- Standard dialog
 	end
 
+	player:setVar("dynaWaitxDay",0);
+
 end;
 
 -----------------------------------
