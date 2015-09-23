@@ -94,7 +94,6 @@ INSERT INTO `mob_pool_mods` VALUES (2265,370,50,0);
 INSERT INTO `mob_pool_mods` VALUES (44,368,150,0);
 INSERT INTO `mob_pool_mods` VALUES (268,370,50,0);
 INSERT INTO `mob_pool_mods` VALUES (268,368,150,0);
-INSERT INTO `mob_pool_mods` VALUES (979,14,700,1);
 INSERT INTO `mob_pool_mods` VALUES (370,28,5,1);
 INSERT INTO `mob_pool_mods` VALUES (768,28,5,1);
 INSERT INTO `mob_pool_mods` VALUES (958,28,5,1);
@@ -214,17 +213,31 @@ INSERT INTO `mob_pool_mods` VALUES (459, 430, 20, 0); -- Quad Attack
 INSERT INTO `mob_pool_mods` VALUES (459, 23, 50, 0); -- Attack 
 INSERT INTO `mob_pool_mods` VALUES (459, 73, 25, 0); -- Store TP  
 
--- -------------------------
--- Quadav NM (Dynamis)
--- -------------------------
-INSERT INTO `mob_pool_mods` VALUES (16, 14, 705, 1); -- Special mob skills
-INSERT INTO `mob_pool_mods` VALUES (1859, 14, 705, 1);
-INSERT INTO `mob_pool_mods` VALUES (400, 14, 705, 1);
-INSERT INTO `mob_pool_mods` VALUES (1614, 14, 705, 1);
-INSERT INTO `mob_pool_mods` VALUES (2285, 14, 705, 1);
-INSERT INTO `mob_pool_mods` VALUES (4499, 14, 705, 1);
-INSERT INTO `mob_pool_mods` VALUES (1179, 14, 705, 1);
-INSERT INTO `mob_pool_mods` VALUES (1855, 14, 705, 1);
+-- Add promyvian boss mods
+INSERT INTO `mob_pool_mods` VALUES (681,14,706,1);
+INSERT INTO `mob_pool_mods` VALUES (681,368,10,0);
+INSERT INTO `mob_pool_mods` VALUES (4382,14,706,1);
+INSERT INTO `mob_pool_mods` VALUES (3172,14,706,1);
+INSERT INTO `mob_pool_mods` VALUES (760,14,706,1);
+INSERT INTO `mob_pool_mods` VALUES (782,14,706,1);
+INSERT INTO `mob_pool_mods` VALUES (63,14,706,1);
+INSERT INTO `mob_pool_mods` VALUES (820,368,10,0);
+INSERT INTO `mob_pool_mods` VALUES (820,14,707,1);
+INSERT INTO `mob_pool_mods` VALUES (861,14,707,1);
+INSERT INTO `mob_pool_mods` VALUES (966,14,707,1);
+INSERT INTO `mob_pool_mods` VALUES (1237,14,707,1);
+INSERT INTO `mob_pool_mods` VALUES (3351,14,707,1);
+INSERT INTO `mob_pool_mods` VALUES (3699,14,707,1);
+INSERT INTO `mob_pool_mods` VALUES (3206,14,708,1);
+INSERT INTO `mob_pool_mods` VALUES (2080,14,708,1);
+INSERT INTO `mob_pool_mods` VALUES (2081,14,708,1);
+INSERT INTO `mob_pool_mods` VALUES (2824,14,708,1);
+INSERT INTO `mob_pool_mods` VALUES (2825,14,708,1);
+INSERT INTO `mob_pool_mods` VALUES (2826,14,708,1);
+INSERT INTO `mob_pool_mods` VALUES (2827,14,708,1);
+INSERT INTO `mob_pool_mods` VALUES (3202,14,708,1);
+INSERT INTO `mob_pool_mods` VALUES (3204,14,708,1);
+INSERT INTO `mob_pool_mods` VALUES (3483,14,708,1);
 
 /*!40000 ALTER TABLE `mob_pool_mods` ENABLE KEYS */;
 UNLOCK TABLES;
