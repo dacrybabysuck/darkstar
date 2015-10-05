@@ -29,6 +29,7 @@
 #include "../grades.h"
 #include "../trait.h"
 #include "mobutils.h"
+#include "petutils.h"
 #include "zoneutils.h"
 #include "../lua/luautils.h"
 #include "../mob_modifier.h"
@@ -444,6 +445,13 @@ void CalculateStats(CMobEntity * PMob)
     SetupJob(PMob);
     SetupRoaming(PMob);
 
+    if (PMob->PMaster != nullptr)
+    {
+        SetupPetSkills(PMob);
+    }
+
+    PMob->m_Behaviour |= PMob->getMobMod(MOBMOD_BEHAVIOR);
+
     if(zoneType == ZONETYPE_DUNGEON)
     {
         SetupDungeonMob(PMob);
@@ -471,6 +479,7 @@ void CalculateStats(CMobEntity * PMob)
     {
         SetupMaat(PMob);
     }
+
 }
 
 void SetupJob(CMobEntity* PMob)
@@ -479,33 +488,21 @@ void SetupJob(CMobEntity* PMob)
 
     switch(mJob)
     {
+        case JOB_THF:
+            // thfs drop more gil
+            PMob->defaultMobMod(MOBMOD_GIL_BONUS, 15);
+            break;
         case JOB_DRG:
             // drg can use 2 hour multiple times
             PMob->setMobMod(MOBMOD_2HOUR_MULTI, 1);
-
-            if(PMob->m_Family != 193)
-            {
-                PMob->setMobMod(MOBMOD_SPECIAL_COOL, 45);
-
-                // sahigans
-                if(PMob->m_Family == 213)
-                {
-                    PMob->setMobMod(MOBMOD_SPECIAL_SKILL, 514);
-                }
-                else
-                {
-                    // all other dragoons
-                    PMob->setMobMod(MOBMOD_SPECIAL_SKILL, 808);
-                }
-            }
 
             // only drgs in 3rd expansion calls wyvern as non-NM
             // include fomors
             if(!(PMob->m_Type & MOBTYPE_NOTORIOUS) && PMob->loc.zone->GetContinentID() == THE_ARADJIAH_CONTINENT || PMob->m_Family == 115)
             {
                 // 20 min recast
-                PMob->setMobMod(MOBMOD_SPECIAL_SKILL, 476);
-                PMob->setMobMod(MOBMOD_SPECIAL_COOL, 720);
+                PMob->defaultMobMod(MOBMOD_SPECIAL_SKILL, 476);
+                PMob->defaultMobMod(MOBMOD_SPECIAL_COOL, 720);
             }
             break;
         case JOB_RNG:
@@ -513,66 +510,70 @@ void SetupJob(CMobEntity* PMob)
             // giga
             if(PMob->m_Family >= 126 && PMob->m_Family <= 130 || PMob->m_Family == 328)
             {
-                PMob->setMobMod(MOBMOD_SPECIAL_COOL, 35);
+                // only used while at range
+                PMob->defaultMobMod(MOBMOD_SPECIAL_COOL, 12);
                 // catapult
-                PMob->setMobMod(MOBMOD_SPECIAL_SKILL, 402);
-                PMob->setMobMod(MOBMOD_STANDBACK_TIME, 20);
+                PMob->defaultMobMod(MOBMOD_SPECIAL_SKILL, 402);
             }
             else
             {
                 // all other rangers
-                PMob->setMobMod(MOBMOD_SPECIAL_COOL, 20);
-                PMob->setMobMod(MOBMOD_SPECIAL_SKILL, 16);
-                PMob->setMobMod(MOBMOD_STANDBACK_TIME, 60);
+                PMob->defaultMobMod(MOBMOD_SPECIAL_COOL, 12);
+                PMob->defaultMobMod(MOBMOD_SPECIAL_SKILL, 16);
+                PMob->defaultMobMod(MOBMOD_STANDBACK_COOL, 8);
             }
 
-            if(PMob->m_Family == 199)
+            if(PMob->getMobMod(MOBMOD_NO_STANDBACK) == 0)
             {
-                // they stay back forever
-                PMob->setMobMod(MOBMOD_STANDBACK_TIME, 90);
+                PMob->m_Behaviour |= BEHAVIOUR_HP_STANDBACK;
             }
 
             break;
         case JOB_NIN:
-            PMob->setMobMod(MOBMOD_STANDBACK_TIME, 25);
-            PMob->setMobMod(MOBMOD_SPECIAL_COOL, 35);
-            PMob->setMobMod(MOBMOD_SPECIAL_SKILL, 16);
-            PMob->setMobMod(MOBMOD_MAGIC_COOL, 35);
-            PMob->defaultMobMod(MOBMOD_BUFF_CHANCE, 30);
+            PMob->defaultMobMod(MOBMOD_SPECIAL_COOL, 9);
+            PMob->defaultMobMod(MOBMOD_SPECIAL_SKILL, 16);
+            PMob->defaultMobMod(MOBMOD_MAGIC_COOL, 35);
+            PMob->defaultMobMod(MOBMOD_BUFF_CHANCE, 20);
+
+            if(PMob->getMobMod(MOBMOD_NO_STANDBACK) == 0)
+            {
+                PMob->m_Behaviour |= BEHAVIOUR_HP_STANDBACK;
+            }
             break;
         case JOB_BST:
-            PMob->setMobMod(MOBMOD_SPECIAL_COOL, 100);
-            PMob->setMobMod(MOBMOD_SPECIAL_SKILL, 761);
+            PMob->defaultMobMod(MOBMOD_SPECIAL_COOL, 70);
+            PMob->defaultMobMod(MOBMOD_SPECIAL_SKILL, 761);
             break;
         case JOB_PUP:
-            PMob->setMobMod(MOBMOD_SPECIAL_SKILL, 1645);
-            PMob->setMobMod(MOBMOD_SPECIAL_COOL, 720);
-            break;
-        case JOB_COR:
-            PMob->setMobMod(MOBMOD_STANDBACK_TIME, 60);
+            PMob->defaultMobMod(MOBMOD_SPECIAL_SKILL, 1645);
+            PMob->defaultMobMod(MOBMOD_SPECIAL_COOL, 720);
             break;
         case JOB_BLM:
-            PMob->setMobMod(MOBMOD_STANDBACK_TIME, 42);
-            PMob->setMobMod(MOBMOD_MAGIC_COOL, 30);
+            PMob->defaultMobMod(MOBMOD_STANDBACK_COOL, 16);
+            PMob->defaultMobMod(MOBMOD_MAGIC_COOL, 35);
             PMob->defaultMobMod(MOBMOD_GA_CHANCE, 40);
             PMob->defaultMobMod(MOBMOD_BUFF_CHANCE, 15);
+
+            if(PMob->getMobMod(MOBMOD_NO_STANDBACK) == 0)
+            {
+                PMob->m_Behaviour |= BEHAVIOUR_HP_STANDBACK;
+            }
             break;
         case JOB_WHM:
-            PMob->setMobMod(MOBMOD_STANDBACK_TIME, 32);
-            PMob->setMobMod(MOBMOD_MAGIC_COOL, 35);
+            PMob->defaultMobMod(MOBMOD_MAGIC_COOL, 35);
             break;
         case JOB_BRD:
-            PMob->setMobMod(MOBMOD_MAGIC_COOL, 30);
+            PMob->defaultMobMod(MOBMOD_MAGIC_COOL, 35);
             PMob->defaultMobMod(MOBMOD_GA_CHANCE, 25);
             PMob->defaultMobMod(MOBMOD_BUFF_CHANCE, 60);
         case JOB_BLU:
-            PMob->setMobMod(MOBMOD_MAGIC_COOL, 40);
+            PMob->defaultMobMod(MOBMOD_MAGIC_COOL, 35);
         case JOB_RDM:
-            PMob->setMobMod(MOBMOD_MAGIC_COOL, 35);
+            PMob->defaultMobMod(MOBMOD_MAGIC_COOL, 35);
             PMob->defaultMobMod(MOBMOD_GA_CHANCE, 15);
             PMob->defaultMobMod(MOBMOD_BUFF_CHANCE, 40);
         case JOB_SMN:
-            PMob->setMobMod(MOBMOD_MAGIC_COOL, 70);
+            PMob->defaultMobMod(MOBMOD_MAGIC_COOL, 70);
             // smn only has "buffs"
             PMob->defaultMobMod(MOBMOD_BUFF_CHANCE, 100);
     }
@@ -590,7 +591,7 @@ void SetupRoaming(CMobEntity* PMob)
     {
         case SYSTEM_BEASTMEN:
             distance = 20;
-            turns = 4;
+            turns = 5;
             cool = 45;
             break;
     }
@@ -614,20 +615,53 @@ void SetupRoaming(CMobEntity* PMob)
 
 }
 
+void SetupPetSkills(CMobEntity* PMob)
+{
+    int16 skillListId = 0;
+    // same mob can spawn as different families
+    // can't set this from the database
+    switch(PMob->m_Family)
+    {
+        case 383: // ifrit
+            skillListId = 715;
+            break;
+        case 388: // titan
+            skillListId = 716;
+            break;
+        case 384: // levi
+            skillListId = 717;
+            break;
+        case 382: //garuda
+            skillListId = 718;
+            break;
+        case 387: // shiva
+            skillListId = 719;
+            break;
+        case 386: // ramuh
+            skillListId = 720;
+            break;
+        case 379: // carbuncle
+            skillListId = 721;
+            break;
+    }
+
+    if (skillListId != 0)
+    {
+        PMob->setMobMod(MOBMOD_SKILL_LIST, skillListId);
+    }
+}
+
 void SetupDynamisMob(CMobEntity* PMob)
 {
     JOBTYPE mJob = PMob->GetMJob();
-
-    if(mJob == JOB_BST)
-    {
-        // bsts are spawned with pets
-        PMob->setMobMod(MOBMOD_SPECIAL_SKILL, 0);
-    }
 
     // no gil drop and no mugging!
     PMob->setMobMod(MOBMOD_GIL_MAX, -1);
     PMob->setMobMod(MOBMOD_MUG_GIL, -1);
     PMob->setMobMod(MOBMOD_2HOUR_PROC, 80);
+
+    // used for dynamis stat-spawned mobs
+    PMob->m_StatPoppedMobs = false;
 
     // dynamis mobs have true sight
     if(PMob->m_Aggro & AGGRO_DETECT_SIGHT)
@@ -640,8 +674,9 @@ void SetupDynamisMob(CMobEntity* PMob)
         PMob->m_Aggro |= AGGRO_DETECT_TRUEHEARING;
     }
 
+    // Hydra's and beastmen can 2 hour
     if(PMob->m_EcoSystem == SYSTEM_BEASTMEN ||
-            PMob->m_EcoSystem == SYSTEM_HUMANOID)
+            PMob->m_EcoSystem == SYSTEM_UNDEAD)
     {
         PMob->setMobMod(MOBMOD_MAIN_2HOUR, 1);
     }
@@ -671,6 +706,9 @@ void SetupDynamisMob(CMobEntity* PMob)
 void SetupBattlefieldMob(CMobEntity* PMob)
 {
     PMob->setMobMod(MOBMOD_NO_DESPAWN, 1);
+
+    // Battlefield mobs don't drop gil
+    PMob->setMobMod(MOBMOD_GIL_MAX, -1);
 
     // never despawn
     PMob->SetDespawnTimer(0);
@@ -710,19 +748,30 @@ void SetupNMMob(CMobEntity* PMob)
     // enmity range is larger
     PMob->m_enmityRange = 28;
 
-    if(mJob == JOB_WHM && mLvl >= 25)
-    {
-        // whm nms have stronger regen effect
-        PMob->addModifier(MOD_REGEN, mLvl/4);
-    }
-
     // NMs cure earlier
     PMob->defaultMobMod(MOBMOD_HP_HEAL_CHANCE, 50);
     PMob->defaultMobMod(MOBMOD_HEAL_CHANCE, 40);
 
-    // add two hours
-    if(mLvl >= 10)
+    // give a gil bonus if accurate value was not set
+    if (PMob->getMobMod(MOBMOD_GIL_MAX) == 0)
     {
+        PMob->defaultMobMod(MOBMOD_GIL_BONUS, 100);
+    }
+
+    if(mLvl >= 25)
+    {
+        if(mJob == JOB_NIN)
+        {
+            PMob->setMobMod(MOBMOD_DUAL_WIELD, 1);
+        }
+
+        if(mJob == JOB_WHM)
+        {
+            // whm nms have stronger regen effect
+            PMob->addModifier(MOD_REGEN, mLvl/4);
+        }
+
+        // add two hours
         if(PMob->m_EcoSystem == SYSTEM_BEASTMEN ||
                 PMob->m_EcoSystem == SYSTEM_HUMANOID)
         {
@@ -737,12 +786,8 @@ void SetupMaat(CMobEntity* PMob)
     PMob->m_Weapons[SLOT_MAIN]->setDelay((240*1000)/60);
 
     switch(PMob->GetMJob()){
-        case JOB_DRG:
-            PMob->setMobMod(MOBMOD_SPECIAL_SKILL, 0);
-            break;
         case JOB_NIN:
-            // this is kind a hacky but make nin maat always double attack
-            PMob->setModifier(MOD_DOUBLE_ATTACK, 100);
+            PMob->setMobMod(MOBMOD_DUAL_WIELD, 1);
             PMob->m_Weapons[SLOT_MAIN]->resetDelay();
             PMob->setMobMod(MOBMOD_SPECIAL_SKILL, 0);
             break;
@@ -785,12 +830,12 @@ void GetAvailableSpells(CMobEntity* PMob) {
 	}
 
 	// catch all non-defaulted spell chances
-        PMob->defaultMobMod(MOBMOD_MAGIC_COOL, 45);
-	PMob->defaultMobMod(MOBMOD_GA_CHANCE, 45);
+        PMob->defaultMobMod(MOBMOD_MAGIC_COOL, 35);
+	PMob->defaultMobMod(MOBMOD_GA_CHANCE, 35);
 	PMob->defaultMobMod(MOBMOD_NA_CHANCE, 40);
 	PMob->defaultMobMod(MOBMOD_BUFF_CHANCE, 35);
 	PMob->defaultMobMod(MOBMOD_HEAL_CHANCE, 40);
-	PMob->defaultMobMod(MOBMOD_HP_HEAL_CHANCE, 25);
+	PMob->defaultMobMod(MOBMOD_HP_HEAL_CHANCE, 40);
 
 	RecalculateSpellContainer(PMob);
 
@@ -1093,6 +1138,9 @@ void InitializeMaat(CMobEntity* PMob, JOBTYPE job)
         case JOB_BLU:
             spellList = 8;
             break;
+        case JOB_SMN:
+            spellList = 141;
+            break;
     }
 
     PMob->m_SpellListContainer = mobSpellList::GetMobSpellList(spellList);
@@ -1184,15 +1232,6 @@ CMobEntity* InstantiateAlly(uint32 groupid, uint16 zoneID, CInstance* instance)
 			PMob->setModifier(MOD_PIERCERES, (uint16)(Sql_GetFloatData(SqlHandle, 32) * 1000));
 			PMob->setModifier(MOD_HTHRES, (uint16)(Sql_GetFloatData(SqlHandle, 33) * 1000));
 			PMob->setModifier(MOD_IMPACTRES, (uint16)(Sql_GetFloatData(SqlHandle, 34) * 1000));
-
-			PMob->setModifier(MOD_FIREDEF, (int16)((Sql_GetFloatData(SqlHandle, 35) - 1) * -1000)); // These are stored as floating percentages
-			PMob->setModifier(MOD_ICEDEF, (int16)((Sql_GetFloatData(SqlHandle, 36) - 1) * -1000)); // and need to be adjusted into modifier units.
-			PMob->setModifier(MOD_WINDDEF, (int16)((Sql_GetFloatData(SqlHandle, 37) - 1) * -1000)); // Higher DEF = lower damage.
-			PMob->setModifier(MOD_EARTHDEF, (int16)((Sql_GetFloatData(SqlHandle, 38) - 1) * -1000)); // Negatives signify increased damage.
-			PMob->setModifier(MOD_THUNDERDEF, (int16)((Sql_GetFloatData(SqlHandle, 39) - 1) * -1000)); // Positives signify reduced damage.
-			PMob->setModifier(MOD_WATERDEF, (int16)((Sql_GetFloatData(SqlHandle, 40) - 1) * -1000)); // Ex: 125% damage would be 1.25, 50% damage would be 0.50
-			PMob->setModifier(MOD_LIGHTDEF, (int16)((Sql_GetFloatData(SqlHandle, 41) - 1) * -1000)); // (1.25 - 1) * -1000 = -250 DEF
-			PMob->setModifier(MOD_DARKDEF, (int16)((Sql_GetFloatData(SqlHandle, 42) - 1) * -1000)); // (0.50 - 1) * -1000 = 500 DEF
 
 			PMob->setModifier(MOD_FIRERES, (int16)((Sql_GetFloatData(SqlHandle, 35) - 1) * -100)); // These are stored as floating percentages
 			PMob->setModifier(MOD_ICERES, (int16)((Sql_GetFloatData(SqlHandle, 36) - 1) * -100)); // and need to be adjusted into modifier units.
