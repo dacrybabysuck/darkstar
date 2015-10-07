@@ -134,7 +134,6 @@ INSERT INTO `mob_skill_lists` VALUES ('',496,1954);
 -- Morbol
 INSERT INTO `mob_skill_lists` VALUES ('',186,60);
 INSERT INTO `mob_skill_lists` VALUES ('',186,61);
-INSERT INTO `mob_skill_lists` VALUES ('',186,62);
 INSERT INTO `mob_skill_lists` VALUES ('',186,63);
 INSERT INTO `mob_skill_lists` VALUES ('',186,64);
 -- INSERT INTO `mob_skill_lists` VALUES ('',186,470);
@@ -2173,7 +2172,7 @@ INSERT INTO `mob_skill_lists` VALUES ('',199,1472);
 
 -- INSERT INTO `mob_skill_lists` VALUES ('',1913,?);
 
--- Pet Wyvern
+-- Player Dragoon wyvern pets
 INSERT INTO `mob_skill_lists` VALUES ('',193,638);
 INSERT INTO `mob_skill_lists` VALUES ('',193,639);
 INSERT INTO `mob_skill_lists` VALUES ('',193,640);

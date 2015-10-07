@@ -179,6 +179,11 @@ void CAIMobDummy::ActionRoaming()
     {
         // lets buff up or move around
 
+        if (m_PMob->CalledForHelp())
+        {
+            m_PMob->CallForHelp(false);
+        }
+
         // can't rest with poison or disease
         if (m_PMob->CanRest())
         {
@@ -188,7 +193,8 @@ void CAIMobDummy::ActionRoaming()
                 // health updated
                 m_PMob->updatemask |= UPDATE_HP;
             }
-            else
+
+            if(m_PMob->GetHPP() == 100)
             {
                 // at max health undirty exp
                 m_PMob->m_giveExp = true;
@@ -360,7 +366,6 @@ void CAIMobDummy::ActionDisengage()
     m_PMob->delRageMode();
     m_PMob->m_OwnerID.clean();
     m_PMob->updatemask |= (UPDATE_STATUS | UPDATE_HP);
-    m_PMob->CallForHelp(false);
     m_PMob->animation = ANIMATION_NONE;
 
     //if (m_PMob->animationsub == 2) m_PMob->animationsub = 3;
@@ -650,6 +655,7 @@ void CAIMobDummy::ActionSpawn()
         m_PMob->status = m_PMob->allegiance == ALLEGIANCE_MOB ? STATUS_MOB : STATUS_NORMAL;
         m_PMob->animation = ANIMATION_NONE;
         m_PMob->HideName(false);
+        m_PMob->CallForHelp(false);
         m_PMob->ResetLocalVars();
 
         m_PMob->PEnmityContainer->Clear();
@@ -1583,7 +1589,10 @@ void CAIMobDummy::ActionAttack()
             else if (CanMoveForward(currentDistance))
             {
 
-                m_PPathFind->PathAround(m_PBattleTarget->loc.p, 2.0f, PATHFLAG_WALLHACK | PATHFLAG_RUN);
+                // stand around an enemy between 1-2 yalms away
+                float distanceFromTarget = dsp_cap(currentDistance, 1.0f, 2.0f);
+
+                m_PPathFind->PathAround(m_PBattleTarget->loc.p, distanceFromTarget, PATHFLAG_WALLHACK | PATHFLAG_RUN | PATHFLAG_SLIDE);
                 m_PPathFind->FollowPath();
 
                 // recalculate
@@ -2425,14 +2434,14 @@ void CAIMobDummy::SetupEngage()
     JOBTYPE mJob = m_PMob->GetMJob();
 
     // Don't cast magic or use special ability right away
-    if(mJob != JOB_SMN)
+    if(m_PMob->getBigMobMod(MOBMOD_MAGIC_DELAY) != 0)
     {
-        m_LastMagicTime = m_Tick - m_PMob->getBigMobMod(MOBMOD_MAGIC_COOL) + dsprand::GetRandomNumber(7000);
+        m_LastMagicTime = m_Tick - m_PMob->getBigMobMod(MOBMOD_MAGIC_COOL) + dsprand::GetRandomNumber(m_PMob->getBigMobMod(MOBMOD_MAGIC_DELAY));
     }
 
-    if(mJob != JOB_BST && mJob != JOB_PUP && mJob != JOB_DRG)
+    if(m_PMob->getBigMobMod(MOBMOD_SPECIAL_DELAY) != 0)
     {
-        m_LastSpecialTime = m_Tick - m_PMob->getBigMobMod(MOBMOD_SPECIAL_COOL) + dsprand::GetRandomNumber(7000);
+        m_LastSpecialTime = m_Tick - m_PMob->getBigMobMod(MOBMOD_SPECIAL_COOL) + dsprand::GetRandomNumber(m_PMob->getBigMobMod(MOBMOD_SPECIAL_DELAY));
     }
 
     m_firstSpell = true;
