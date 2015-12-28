@@ -10,13 +10,13 @@ cmdprops =
 };
 
 function onTrigger(player, mobId)
-    local targ = player:getTargetID();
+    local targ = player:getCursorTarget();
     if (targ ~= nil and mobId == nil) then
-        DespawnMob(targ);
-        player:PrintToPlayer(targ .. " despawned.");
+        DespawnMob(targ:getID());
+        player:PrintToPlayer(targ:getID() .. " despawned.");
     elseif (mobId ~= nil and (mobId ~= nil or tonumber(mobId) ~= nil or tonumber(mobId) ~= 0)) then
         DespawnMob(mobId);
-        player:PrintToPlayer(mobID .. " despawned.");
+        player:PrintToPlayer(mobId .. " despawned.");
     else
         player:PrintToPlayer("No target specified.");
     end;

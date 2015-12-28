@@ -226,11 +226,11 @@ function onMobFight(mob,target)
     end
 
     -- Repops pets sets model and sets them agro..
-	-- This is TeoTwawki's loop for respawning pets, I left it here in case
-	-- someone ever wants it
+    -- This is TeoTwawki's loop for respawning pets, I left it here in case
+    -- someone ever wants it
     -- if (mob:getLocalVar("repopPets") == 1) then
         -- for i = 1, 8 do
-            -- if petStatus[i] == 0 then					
+            -- if petStatus[i] == 0 then                    
                 -- SpawnMob(petIDs[i]):updateEnmity(target);
             -- end
 
@@ -243,7 +243,7 @@ function onMobFight(mob,target)
 
 
     ------------------------ Despawn timer ------------------------
-    if (os.time(t) > depopTime) then
+    if (os.time(t) > depopTime and mob:actionQueueEmpty() == true) then
         for i=17056170, 17056186 do
             DespawnMob(i);
         end
@@ -311,7 +311,7 @@ end;
 -- onMobDeath
 -----------------------------------
 
-function onMobDeath(mob,killer)
+function onMobDeath(mob,killer,ally)
     -- TODO: Death speech.
-    killer:addTitle(PANDEMONIUM_QUELLER);
+    ally:addTitle(PANDEMONIUM_QUELLER);
 end;
