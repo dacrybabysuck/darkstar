@@ -1,43 +1,56 @@
 -----------------------------------------
 -- Spell: Slow
 -- Spell accuracy is most highly affected by Enfeebling Magic Skill, Magic Accuracy, and MND.
--- Slow's potency is calculated with the formula (150 + dMND*2)/1024, and caps at 300/1024 (~29.3%).
+-- Slow's potency is calculated with the formula (187.5 + dMND*1.5)/1024, and caps at 300/1024 (~29.3%).
 -- And MND of 75 is neccessary to reach the hardcap of Slow.
 -----------------------------------------
-
-require("scripts/globals/status");
-require("scripts/globals/magic");
-
+require("scripts/globals/status")
+require("scripts/globals/magic")
+require("scripts/globals/msg")
+require("scripts/globals/status")
+require("scripts/globals/utils")
 -----------------------------------------
--- OnSpellCast
------------------------------------------
 
-function onMagicCastingCheck(caster,target,spell)
-    return 0;
-end;
+function onMagicCastingCheck(caster, target,spell)
+    return 0
+end
 
 function onSpellCast(caster,target,spell)
-    local dMND = (caster:getStat(MOD_MND) - target:getStat(MOD_MND));
+    local dMND = caster:getStat(dsp.mod.MND) - target:getStat(dsp.mod.MND)
 
-    --Power.
-    local power = 150 + dMND * 2;
-    if (power > 350) then
-        power = 350;
+    -- FIXME: PRETTY SURE THIS IS ALL WRONG
+    --Power
+    local power = 1500
+    if dMND > 0 then
+        power = power + dMND * 20
+    else
+        power = power + dMND * 10
+    end
+    power = utils.clamp(power, 730, 2929) -- Lowest 75/1024, Highest 300/1024 ~7.3%-29.2%
+
+    if caster:hasStatusEffect(dsp.effect.SABOTEUR) then
+        power = power * 2
     end
 
-    --Duration, including resistance.
-    local duration = 120 * applyResistanceEffect(caster,spell,target,dMND,35,0,EFFECT_SLOW);
-    if (duration >= 60) then --Do it!
-
-        if (target:addStatusEffect(EFFECT_SLOW,power,0,duration, 0, 1)) then
-            spell:setMsg(236);
+    --Duration, including resistance
+    local duration = 120
+    local params = {}
+    params.diff = nil
+    params.attribute = dsp.mod.MND
+    params.skillType = dsp.skill.ENFEEBLING_MAGIC
+    params.bonus = 0
+    params.effect = dsp.effect.SLOW
+    duration = duration * applyResistanceEffect(caster, target, spell, params)
+    if duration >= 60 then --Do it!
+        if target:addStatusEffect(dsp.effect.SLOW, power, 0, duration, 0, 1) then
+            spell:setMsg(dsp.msg.basic.MAGIC_ENFEEB_IS)
         else
-            spell:setMsg(75);
+            spell:setMsg(dsp.msg.basic.MAGIC_NO_EFFECT)
         end
 
     else
-        spell:setMsg(85);
+        spell:setMsg(dsp.msg.basic.MAGIC_RESIST)
     end
 
-    return EFFECT_SLOW;
-end;
+    return dsp.effect.SLOW
+end

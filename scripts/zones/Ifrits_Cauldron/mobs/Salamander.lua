@@ -2,17 +2,16 @@
 -- Area: Ifrit's Cauldron
 --  MOB: Salamander
 -----------------------------------
-
------------------------------------
--- onMobSpawn Action
+require("scripts/globals/status");
 -----------------------------------
 
-function onMobSpawn(mob)
+function onMobInitialize(mob)
+    mob:setMobMod(dsp.mobMod.IDLE_DESPAWN, 180);
 end;
 
------------------------------------
--- onMobDeath
------------------------------------
+function onMobSpawn(mob)
+    DespawnMob(mob:getID(), 180);
+end;
 
-function onMobDeath(mob,killer,ally)
+function onMobDeath(mob, player, isKiller)
 end;

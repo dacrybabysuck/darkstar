@@ -6,25 +6,14 @@ package.loaded["scripts/zones/LaLoff_Amphitheater/TextIDs"] = nil;
 -----------------------------------
 require("scripts/zones/LaLoff_Amphitheater/TextIDs");
 require("scripts/globals/status");
-
------------------------------------
--- onMobInitialize Action
 -----------------------------------
 
 function onMobInitialize(mob)
-    mob:addMod(MOD_REGAIN, 50);
+    mob:addMod(dsp.mod.REGAIN, 50);
 end;
-
------------------------------------
--- onMobSpawn Action
------------------------------------
 
 function onMobSpawn(mob)
 end;
-
------------------------------------
--- onMobEngaged
------------------------------------
 
 function onMobEngaged(mob,target)
     local mobid = mob:getID()
@@ -39,9 +28,6 @@ function onMobEngaged(mob,target)
     mob:setLocalVar("Benediction", hp);
 end;
 
------------------------------------
--- onMobFight Action
------------------------------------
 function onMobFight(mob,target)
 
     local battletime = mob:getBattleTime();
@@ -49,18 +35,14 @@ function onMobFight(mob,target)
     local bhp = mob:getLocalVar("Benediction");
 
     if (battletime > invtime + 150) then
-        mob:useMobAbility(438);
+        mob:useMobAbility(694);
         mob:setLocalVar("Invincible", battletime);
     elseif (mob:getHPP() < bhp) then
-        mob:useMobAbility(433);
+        mob:useMobAbility(689);
         mob:setLocalVar("Benediction", 0);
     end
 
 end;
 
------------------------------------
--- onMobDeath Action
------------------------------------
-
-function onMobDeath(mob,killer,ally)
+function onMobDeath(mob, player, isKiller)
 end;

@@ -4,7 +4,6 @@
 -----------------------------------
 package.loaded["scripts/zones/Cloister_of_Tides/TextIDs"] = nil;
 -----------------------------------
-
 require("scripts/globals/keyitems");
 require("scripts/globals/shop");
 require("scripts/globals/quests");
@@ -33,10 +32,10 @@ function onBcnmLeave(player,instance,leavecode)
     trialLightning = player:getQuestStatus(OUTLANDS,TRIAL_SIZE_TRIAL_BY_WATER)
     
     if (leavecode == 2) then -- play end CS. Need time and battle id for record keeping + storage
-        player:startEvent(0x7d01,1,1,1,instance:getTimeInside(),1,0,0);
+        player:startEvent(32001,1,1,1,instance:getTimeInside(),1,0,0);
     elseif (leavecode == 4) then
         player:setVar("TrialSizeWater_date",tonumber(os.date("%j"))); -- If you loose, you need to wait 1 real day
-        player:startEvent(0x7d02);
+        player:startEvent(32002);
     end
 end;
 
@@ -47,7 +46,7 @@ end;
 function onEventFinish(player,csid,option)
 -- print("bc finish csid "..csid.." and option "..option);
 
-    if (csid == 0x7d01) then
+    if (csid == 32001) then
         if (player:hasSpell(300) == false) then
         player:addSpell(300); -- Leviathan
         player:messageSpecial(LEVIATHAN_UNLOCKED,0,0,2);
@@ -57,7 +56,7 @@ function onEventFinish(player,csid,option)
             player:messageSpecial(ITEM_OBTAINED,4181); -- Scroll of instant warp
         end
         player:setVar("TrialSizeWater_date", 0);
-        player:addFame(NORG,NORG_FAME*30);
+        player:addFame(NORG,30);
         player:completeQuest(OUTLANDS,TRIAL_SIZE_TRIAL_BY_WATER);
     end
-end;    
+end;

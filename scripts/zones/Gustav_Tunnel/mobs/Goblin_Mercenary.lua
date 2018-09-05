@@ -3,30 +3,15 @@
 --  MOB: Goblin Mercenary
 -- Note: Place holder Wyvernpoacher Drachlox
 -----------------------------------
-
 require("scripts/zones/Gustav_Tunnel/MobIDs");
+require("scripts/globals/groundsofvalor");
+require("scripts/globals/mobs");
 
------------------------------------
--- onMobDeath
------------------------------------
+function onMobDeath(mob, player, isKiller)
+    checkGoVregime(player,mob,764,3);
+    checkGoVregime(player,mob,765,3);
+end;
 
-function onMobDeath(mob,killer,ally)
-
-    checkGoVregime(ally,mob,764,3);
-    checkGoVregime(ally,mob,765,3);
-
-    local mob = mob:getID();
-    if (Wyvernpoacher_Drachlox_PH[mob] ~= nil) then
-
-        local ToD = GetServerVariable("[POP]Wyvernpoacher_Drachlox");
-        if (ToD <= os.time(t) and GetMobAction(Wyvernpoacher_Drachlox) == 0) then
-            if (math.random((1),(20)) == 5) then
-                UpdateNMSpawnPoint(Wyvernpoacher_Drachlox);
-                GetMobByID(Wyvernpoacher_Drachlox):setRespawnTime(GetMobRespawnTime(mob));
-                SetServerVariable("[PH]Wyvernpoacher_Drachlox", mob);
-                DeterMob(mob, true);
-            end
-        end
-    end
-
+function onMobDespawn(mob)
+    phOnDespawn(mob,WYVERNPOACHER_DRACHLOX_PH,5,math.random(7200,28800)); -- 2 to 8 hours
 end;

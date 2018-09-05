@@ -1,25 +1,17 @@
 -----------------------------------
 -- Area: The Eldieme Necropolis
--- NPC:  East Plate
--- @pos 231 -34 20 195
------------------------------------
-
------------------------------------
--- onTrade Action
+--  NPC: East Plate
+-- !pos 231 -34 20 195
 -----------------------------------
 
 function onTrade(player,npc,trade)
-end; 
-
------------------------------------
--- onTrigger Action
------------------------------------
+end;
 
 function onTrigger(player,npc)
     local state0 = 8;
     local state1 = 9;
     local DoorOffset = npc:getID() - 20; -- _5f1
-    
+
     if (npc:getAnimation() == 8) then
         state0 = 9;
         state1 = 8;
@@ -49,7 +41,7 @@ function onTrigger(player,npc)
     GetNPCByID(DoorOffset+17):setAnimation(state1);
     GetNPCByID(DoorOffset+18):setAnimation(state1);
     GetNPCByID(DoorOffset+19):setAnimation(state1);
-    
+
     -- Plates
     -- East Plate
     GetNPCByID(DoorOffset+20):setAnimation(state0);
@@ -66,20 +58,8 @@ function onTrigger(player,npc)
     return 0;
 end;
 
------------------------------------
--- onEventUpdate
------------------------------------
-
 function onEventUpdate(player,csid,option)
---printf("CSID: %u",csid);
---printf("RESULT: %u",option);
 end;
 
------------------------------------
--- onEventFinish
------------------------------------
-
 function onEventFinish(player,csid,option)
---printf("CSID: %u",csid);
---printf("RESULT: %u",option);
 end;

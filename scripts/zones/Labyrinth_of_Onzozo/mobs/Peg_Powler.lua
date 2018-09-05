@@ -2,24 +2,11 @@
 -- Area: Labyrinth of Onzozo
 --   NM: Peg Powler
 -----------------------------------
+require("scripts/globals/groundsofvalor");
 
------------------------------------
--- onMobDeath
------------------------------------
+function onMobDeath(mob, player, isKiller)
+    checkGoVregime(player,mob,774,1);
+end;
 
-function onMobDeath(mob,killer,ally)
-
-    checkGoVregime(ally,mob,774,1);
-
-    -- Set Peg Powler's Window Open Time
-    local wait = math.random((7200),(57600));
-    SetServerVariable("[POP]Peg_Powler", os.time(t) + wait); -- 2-16 hours
-    DeterMob(mob:getID(), true);
-
-    -- Set PH back to normal, then set to respawn spawn
-    local PH = GetServerVariable("[PH]Peg_Powler");
-    SetServerVariable("[PH]Peg_Powler", 0);
-    DeterMob(PH, false);
-    GetMobByID(PH):setRespawnTime(GetMobRespawnTime(PH));
-
+function onMobDespawn(mob)
 end;

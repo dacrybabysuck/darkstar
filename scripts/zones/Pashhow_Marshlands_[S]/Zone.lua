@@ -5,20 +5,14 @@
 -----------------------------------
 package.loaded["scripts/zones/Pashhow_Marshlands_[S]/TextIDs"] = nil;
 -----------------------------------
-
-require("scripts/globals/settings");
 require("scripts/zones/Pashhow_Marshlands_[S]/TextIDs");
-
------------------------------------
--- onInitialize
+require("scripts/zones/Pashhow_Marshlands_[S]/MobIDs");
+require("scripts/globals/weather");
+require("scripts/globals/status");
 -----------------------------------
 
 function onInitialize(zone)
 end;
-
------------------------------------
--- onZoneIn
------------------------------------
 
 function onZoneIn(player,prevZone)
     local cs = -1;
@@ -28,27 +22,32 @@ function onZoneIn(player,prevZone)
     return cs;
 end;
 
------------------------------------
--- onRegionEnter
------------------------------------
-
 function onRegionEnter(player,region)
 end;
 
------------------------------------
--- onEventUpdate
------------------------------------
+function onZoneWeatherChange(weather)
 
-function onEventUpdate(player,csid,option)
-    -- printf("CSID: %u",csid);
-    -- printf("RESULT: %u",option);
+    local npc = GetNPCByID(PASHHOW_S_MARKINGS_OFFSET + 1); -- Indescript Markings (BOOTS)
+    if (npc ~= nil) then
+        if (weather == dsp.weather.RAIN or weather == dsp.weather.THUNDER) then
+            npc:setStatus(dsp.status.DISAPPEAR);
+        else
+            npc:setStatus(dsp.status.NORMAL);
+        end
+    end
+
+    npc = GetNPCByID(PASHHOW_S_MARKINGS_OFFSET + 2); -- Indescript Markings (BODY)
+    if (npc ~= nil) then
+        if (weather == dsp.weather.RAIN) then
+            npc:setStatus(dsp.status.DISAPPEAR);
+        else
+            npc:setStatus(dsp.status.NORMAL);
+        end
+    end
 end;
 
------------------------------------
--- onEventFinish
------------------------------------
+function onEventUpdate(player,csid,option)
+end;
 
 function onEventFinish(player,csid,option)
-    -- printf("CSID: %u",csid);
-    -- printf("RESULT: %u",option);
 end;

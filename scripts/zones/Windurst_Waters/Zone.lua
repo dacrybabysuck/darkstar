@@ -10,9 +10,6 @@ require("scripts/globals/events/harvest_festivals");
 require("scripts/globals/missions");
 require("scripts/globals/settings");
 require("scripts/globals/zone");
-
------------------------------------
--- onInitialize
 -----------------------------------
 
 function onInitialize(zone)
@@ -21,10 +18,6 @@ function onInitialize(zone)
 
     applyHalloweenNpcCostumes(zone:getID())
 end;
-
------------------------------------
--- onZoneIn
------------------------------------
 
 function onZoneIn(player,prevZone)
     local cs = -1;
@@ -56,21 +49,9 @@ function onZoneIn(player,prevZone)
     return cs;
 end;
 
------------------------------------
--- onConquestUpdate
------------------------------------
-
 function onConquestUpdate(zone, updatetype)
-    local players = zone:getPlayers();
-
-    for name, player in pairs(players) do
-        conquestUpdate(zone, player, updatetype, CONQUEST_BASE);
-    end
+    dsp.conq.onConquestUpdate(zone, updatetype)
 end;
-
------------------------------------
--- onRegionEnter
------------------------------------
 
 function onRegionEnter(player,region)
 
@@ -79,29 +60,17 @@ function onRegionEnter(player,region)
         [1] = function (x)  -- Windurst Mission 1-3, final cutscene with Leepe-Hoppe
             -- If we're on Windurst Mission 1-3
             if (player:getCurrentMission(WINDURST) == THE_PRICE_OF_PEACE and player:getVar("MissionStatus") == 2) then
-                player:startEvent(0x0092);
+                player:startEvent(146);
             end
         end,
     }
 
 end;
 
------------------------------------
--- onEventUpdate
------------------------------------
-
 function onEventUpdate(player,csid,option)
-    -- printf("CSID: %u",csid);
-    -- printf("RESULT: %u",option);
 end;
 
------------------------------------
--- onEventFinish
------------------------------------
-
 function onEventFinish(player,csid,option)
-    -- printf("CSID: %u",csid);
-    -- printf("RESULT: %u",option);
     if (csid == 531) then
         player:messageSpecial(ITEM_OBTAINED, 536);
     elseif (csid == 30004 and option == 0) then

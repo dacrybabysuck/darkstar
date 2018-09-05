@@ -1,23 +1,15 @@
 -----------------------------------------
---    ID: 11320
---    Skeleton Robe
---    Enchantment: 60Min, Costume - Skeleton
+-- ID: 11320
+-- Skeleton Robe
+-- Enchantment: 60Min, Costume - Skeleton
 -----------------------------------------
-
-require("scripts/globals/status");
-
------------------------------------------
--- OnItemCheck
+require("scripts/globals/status")
 -----------------------------------------
 
 function onItemCheck(target)
-    return target:canUseCostume();
-end;
-
------------------------------------------
--- OnItemUse
------------------------------------------
+    return target:canUseCostume()
+end
 
 function onItemUse(target)
-    target:addStatusEffect(EFFECT_COSTUME,564,0,3600);
-end;
+    target:addStatusEffect(dsp.effect.COSTUME,564,0,3600)
+end

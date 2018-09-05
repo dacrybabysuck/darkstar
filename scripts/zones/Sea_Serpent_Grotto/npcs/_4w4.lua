@@ -1,21 +1,16 @@
 -----------------------------------
 -- Area: Sea Serpent Grotto
--- NPC:  Gold Beastcoin Door
--- @zone 176
--- @pos 60 8.55 -80
+--  NPC: Gold Beastcoin Door
+-- !pos 60 8.55 -80 176
 -----------------------------------
 package.loaded["scripts/zones/Sea_Serpent_Grotto/TextIDs"] = nil;
 -----------------------------------
-
 require("scripts/globals/settings");
 require("scripts/zones/Sea_Serpent_Grotto/TextIDs");
-
------------------------------------
--- onTrade Action
 -----------------------------------
 
 function onTrade(player,npc,trade)
-    
+
     if (trade:hasItemQty(748,1) and trade:getItemCount() == 1) then
         if (player:getVar("SSG_GoldDoor") == 7) then
         npc:openDoor(5) --Open the door if a gold beastcoin has been traded after checking the door the required number of times
@@ -23,16 +18,12 @@ function onTrade(player,npc,trade)
     end
 end;
 
------------------------------------
--- onTrigger Action
------------------------------------
-
 function onTrigger(player,npc)
     X = player:getXPos();
     Z = player:getZPos();
     GoldDoorCheck = player:getVar("SSG_GoldDoor");
-    
-    if (X >= 55  and Z >= -80) then 
+
+    if (X >= 55  and Z >= -80) then
         if (GoldDoorCheck == 0) then --Door has never been checked
             player:messageSpecial(FIRST_CHECK);
             player:setVar("SSG_GoldDoor",1);
@@ -60,22 +51,10 @@ function onTrigger(player,npc)
     return -1 --Open the door if coming from the "inside"
     end
 
-end; 
-        
------------------------------------
--- onEventUpdate
------------------------------------
-
-function onEventUpdate(player,csid,option)
---printf("CSID: %u",csid);
---printf("RESULT: %u",option);
 end;
 
------------------------------------
--- onEventFinish
------------------------------------
+function onEventUpdate(player,csid,option)
+end;
 
 function onEventFinish(player,csid,option)
---printf("CSID: %u",csid);
---printf("RESULT: %u",option);
 end;

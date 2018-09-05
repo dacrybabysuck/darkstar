@@ -5,28 +5,17 @@
 -----------------------------------
 package.loaded[ "scripts/zones/Xarcabard/TextIDs"] = nil;
 -----------------------------------
-
-require("scripts/zones/Xarcabard/TextIDs");
 require("scripts/globals/icanheararainbow");
+require("scripts/zones/Xarcabard/TextIDs");
+require("scripts/zones/Xarcabard/MobIDs");
+require("scripts/globals/conquest");
 require("scripts/globals/keyitems");
 require("scripts/globals/zone");
-require("scripts/globals/conquest");
-
------------------------------------
--- onInitialize
 -----------------------------------
 
 function onInitialize(zone)
-    local manuals = {17236346,17236347};
-
-    SetFieldManual(manuals);
-
-    SetRegionalConquestOverseers(zone:getRegionID())
+    dsp.conq.setRegionalConquestOverseers(zone:getRegionID())
 end;
-
------------------------------------
--- onZoneIn
------------------------------------
 
 function onZoneIn( player, prevZone)
     local cs = -1;
@@ -41,49 +30,31 @@ function onZoneIn( player, prevZone)
         player:setPos( -136.287, -23.268, 137.302, 91);
     end
 
-    if (player:hasKeyItem( VIAL_OF_SHROUDED_SAND) == false and player:getRank() >= 6 and player:getMainLvl() >= 65 and player:getVar( "Dynamis_Status") == 0) then
+    if (player:hasKeyItem( dsp.ki.VIAL_OF_SHROUDED_SAND) == false and player:getRank() >= 6 and player:getMainLvl() >= 65 and player:getVar( "Dynamis_Status") == 0) then
         player:setVar( "Dynamis_Status", 1);
-        cs = 0x000D;
+        cs = 13;
     elseif (triggerLightCutscene(player)) then -- Quest: I Can Hear A Rainbow
-        cs = 0x0009;
+        cs = 9;
     elseif (UnbridledPassionCS == 3) then
-        cs = 0x0004;
+        cs = 4;
     elseif (player:getCurrentMission(WINDURST) == VAIN and player:getVar("MissionStatus") ==1) then
-        cs = 0x000b; 
+        cs = 11;
     end
 
     return cs;
 end;
 
------------------------------------
--- onConquestUpdate
------------------------------------
-
 function onConquestUpdate(zone, updatetype)
-    local players = zone:getPlayers();
-
-    for name, player in pairs(players) do
-        conquestUpdate(zone, player, updatetype, CONQUEST_BASE);
-    end
+    dsp.conq.onConquestUpdate(zone, updatetype)
 end;
-
------------------------------------
--- onRegionEnter
------------------------------------
 
 function onRegionEnter( player, region)
 end;
 
------------------------------------
--- onEventUpdate
------------------------------------
-
 function onEventUpdate( player, csid, option)
-    -- printf("CSID: %u",csid);
-    -- printf("RESULT: %u",option);
-    if (csid == 0x0009) then
+    if (csid == 9) then
         lightCutsceneUpdate(player); -- Quest: I Can Hear A Rainbow
-    elseif (csid == 0x000b) then
+    elseif (csid == 11) then
         if (player:getPreviousZone() == 111) then
             player:updateEvent(0,0,0,0,0,2);
         else
@@ -92,16 +63,10 @@ function onEventUpdate( player, csid, option)
     end
 end;
 
------------------------------------
--- onEventFinish
------------------------------------
-
 function onEventFinish( player, csid, option)
-    -- printf("CSID: %u",csid);
-    -- printf("RESULT: %u",option);
-    if (csid == 0x0009) then
+    if (csid == 9) then
         lightCutsceneFinish(player); -- Quest: I Can Hear A Rainbow
-    elseif (csid == 0x0004) then
+    elseif (csid == 4) then
         player:setVar("unbridledPassion",4);
     end
 end;

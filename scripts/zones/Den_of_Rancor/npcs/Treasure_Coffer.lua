@@ -1,12 +1,10 @@
 -----------------------------------
 -- Area: Den of Rancor
--- NPC:  Treasure Coffer
--- @zone 160
--- @pos 
+--  NPC: Treasure Coffer
+-- !zone 160
 -----------------------------------
 package.loaded["scripts/zones/Den_of_Rancor/TextIDs"] = nil;
 -----------------------------------
-
 require("scripts/globals/settings");
 require("scripts/globals/keyitems");
 require("scripts/globals/treasure");
@@ -17,10 +15,6 @@ local TreasureType = "Coffer";
 local TreasureLvL = 53;
 local TreasureMinLvL = 43;
 
------------------------------------
--- onTrade Action
------------------------------------
-
 function onTrade(player,npc,trade)
 
     -- trade:hasItemQty(1050,1);         -- Treasure Key
@@ -28,17 +22,17 @@ function onTrade(player,npc,trade)
     -- trade:hasItemQty(1023,1);            -- Living Key
     -- trade:hasItemQty(1022,1);            -- Thief's Tools
     local questItemNeeded = 0;
-    
+
     -- Player traded a key.
-    if ((trade:hasItemQty(1050,1) or trade:hasItemQty(1115,1) or trade:hasItemQty(1023,1) or trade:hasItemQty(1022,1)) and trade:getItemCount() == 1) then 
-        
+    if ((trade:hasItemQty(1050,1) or trade:hasItemQty(1115,1) or trade:hasItemQty(1023,1) or trade:hasItemQty(1022,1)) and trade:getItemCount() == 1) then
+
         -- IMPORTANT ITEM: AF Keyitems, AF Items, & Map -----------
         local zone = player:getZoneID();
-        if (player:hasKeyItem(MAP_OF_THE_DEN_OF_RANCOR) == false) then 
+        if (player:hasKeyItem(dsp.ki.MAP_OF_THE_DEN_OF_RANCOR) == false) then
             questItemNeeded = 1;
         end
         --------------------------------------
-        
+
         local pack = openChance(player,npc,trade,TreasureType,TreasureLvL,TreasureMinLvL,questItemNeeded);
         local success = 0;
         if (pack[2] ~= nil) then
@@ -47,25 +41,25 @@ function onTrade(player,npc,trade)
         else
             success = pack[1];
         end
-        
+
         if (success ~= -2) then
             player:tradeComplete();
-            
+
             if (math.random() <= success) then
                 -- Succeded to open the coffer
                 player:messageSpecial(CHEST_UNLOCKED);
-                
+
                 if (questItemNeeded == 1) then
-                    player:addKeyItem(MAP_OF_THE_DEN_OF_RANCOR);
-                    player:messageSpecial(KEYITEM_OBTAINED,MAP_OF_THE_DEN_OF_RANCOR); -- Map of the Den of Rancor (KI)
+                    player:addKeyItem(dsp.ki.MAP_OF_THE_DEN_OF_RANCOR);
+                    player:messageSpecial(KEYITEM_OBTAINED,dsp.ki.MAP_OF_THE_DEN_OF_RANCOR); -- Map of the Den of Rancor (KI)
                 else
-                    player:setVar("["..zone.."]".."Treasure_"..TreasureType,os.time() + math.random(CHEST_MIN_ILLUSION_TIME,CHEST_MAX_ILLUSION_TIME)); 
-                    
+                    player:setVar("["..zone.."]".."Treasure_"..TreasureType,os.time() + math.random(CHEST_MIN_ILLUSION_TIME,CHEST_MAX_ILLUSION_TIME));
+
                     local loot = cofferLoot(zone,npc);
                     -- print("loot array: "); -- debug
                     -- print("[1]", loot[1]); -- debug
                     -- print("[2]", loot[2]); -- debug
-                    
+
                     if (loot[1]=="gil") then
                         player:addGil(loot[2]*GIL_RATE);
                         player:messageSpecial(GIL_OBTAINED,loot[2]*GIL_RATE);
@@ -86,28 +80,12 @@ function onTrade(player,npc,trade)
 
 end;
 
------------------------------------
--- onTrigger Action
------------------------------------
-
 function onTrigger(player,npc)
     player:messageSpecial(CHEST_LOCKED,1050);
-end; 
-
------------------------------------
--- onEventUpdate
------------------------------------
-
-function onEventUpdate(player,csid,option)
---printf("CSID: %u",csid);
---printf("RESULT: %u",option);
 end;
 
------------------------------------
--- onEventFinish
------------------------------------
+function onEventUpdate(player,csid,option)
+end;
 
 function onEventFinish(player,csid,option)
---printf("CSID: %u",csid);
---printf("RESULT: %u",option);
 end;

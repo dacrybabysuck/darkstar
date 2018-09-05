@@ -22,37 +22,28 @@
 */
 
 #include <string.h>
+#include <array>
 
 #include "lua/luautils.h"
 
 #include "map.h"
 #include "spell.h"
 #include "blue_spell.h"
+#include "status_effect_container.h"
 #include "utils/blueutils.h"
+#include "items/item_weapon.h"
 
 
-CSpell::CSpell(uint16 id)
+CSpell::CSpell(SpellID id)
 {
     m_ID = id;
-
-    m_radius            = 0;
-    m_mpCost            = 0;
-    m_castTime          = 0;
-    m_recastTime        = 0;
-    m_animation         = 0;
-    m_AOE               = 0;
-    m_animationTime     = 0;
-    m_skillType         = 0;
-    m_zoneMisc          = 0;
-    m_message           = 0;
-    m_MagicBurstMessage = 0;
-    m_element           = 0;
-    m_spellGroup        = SPELLGROUP_NONE;
-    m_meritId           = 0;
-    m_requirements      = 0;
-
-    memset(m_job, 0, sizeof(m_job));
 }
+
+  std::unique_ptr<CSpell> CSpell::clone()
+  {
+      //no make_unique because it requires the copy constructor to be public
+      return std::unique_ptr<CSpell>(new CSpell(*this));
+  }
 
 void CSpell::setTotalTargets(uint16 total)
 {
@@ -64,12 +55,12 @@ uint16 CSpell::getTotalTargets()
     return m_totalTargets;
 }
 
-void CSpell::setID(uint16 id)
+void CSpell::setID(SpellID id)
 {
     m_ID = id;
 }
 
-uint16 CSpell::getID()
+SpellID CSpell::getID()
 {
     return m_ID;
 }
@@ -106,13 +97,13 @@ void CSpell::setRecastTime(uint32 RecastTime)
 
 const int8* CSpell::getName()
 {
-    return m_name.c_str();
+    return (const int8*)m_name.c_str();
 }
 
 void CSpell::setName(int8* name)
 {
     m_name.clear();
-    m_name.insert(0,name);
+    m_name.insert(0, (const char*)name);
 }
 
 SPELLGROUP CSpell::getSpellGroup()
@@ -155,23 +146,23 @@ bool CSpell::hasMPCost()
 
 bool CSpell::isHeal()
 {
-    return (getValidTarget() & TARGET_SELF) && getSkillType() == SKILL_HEA || m_ID == 549 || m_ID == 578 || m_ID == 581 || m_ID == 593;
+    return ((getValidTarget() & TARGET_SELF) && getSkillType() == SKILL_HEALING_MAGIC) || m_ID == SpellID::Pollen || m_ID == SpellID::Wild_Carrot || m_ID == SpellID::Healing_Breeze || m_ID == SpellID::Magic_Fruit;
 }
 
 
 bool CSpell::isCure()
 {
-    return ((m_ID >= 1 && m_ID <= 11) || m_ID == 93 || m_ID == 474 || m_ID == 475);
+    return ((static_cast<uint16>(m_ID) >= 1 && static_cast<uint16>(m_ID) <= 11) || m_ID == SpellID::Cura || m_ID == SpellID::Cura_II || m_ID == SpellID::Cura_III);
 }
 
 bool CSpell::isNa()
 {
-    return (m_ID >= 14 && m_ID <= 20) || m_ID == 143;
+    return (static_cast<uint16>(m_ID) >= 14 && static_cast<uint16>(m_ID) <= 20) || m_ID == SpellID::Erase;
 }
 
 bool CSpell::canHitShadow()
 {
-    return m_ID != 244 && canTargetEnemy();
+    return m_ID != SpellID::Meteor_II && canTargetEnemy();
 }
 
 bool CSpell::dealsDamage()
@@ -387,27 +378,37 @@ void CSpell::setFlag(uint8 flag)
     m_flag = flag;
 }
 
-int8* CSpell::getExpansionCode()
+int8* CSpell::getContentTag()
 {
-    return m_expansionCode;
+    return m_contentTag;
 }
 
-void CSpell::setExpansionCode(int8* expansionCode)
+float CSpell::getRange()
 {
-    m_expansionCode = expansionCode;
+    return m_range;
 }
 
-//Implement namespace to work with spells       
+void CSpell::setContentTag(int8* contentTag)
+{
+    m_contentTag = contentTag;
+}
+
+void CSpell::setRange(float range)
+{
+    m_range = range;
+}
+
+//Implement namespace to work with spells
 namespace spell
 {
-    std::array<CSpell*, 1024> PSpellList; // spell list
+    std::array<CSpell*, MAX_SPELL_ID> PSpellList; // spell list
     std::map<uint16, uint16> PMobSkillToBlueSpell; // maps the skill id (key) to spell id (value).
 
     //Load a list of spells
     void LoadSpellList()
     {
-        const int8* Query = "SELECT spellid, name, jobs, `group`, validTargets, skill, castTime, recastTime, animation, animationTime, mpCost, \
-                             AOE, base, element, zonemisc, multiplier, message, magicBurstMessage, CE, VE, requirements, required_expansion \
+        const char* Query = "SELECT spellid, name, jobs, `group`, validTargets, skill, castTime, recastTime, animation, animationTime, mpCost, \
+                             AOE, base, element, zonemisc, multiplier, message, magicBurstMessage, CE, VE, requirements, content_tag, spell_range \
                              FROM spell_list;";
 
         int32 ret = Sql_Query(SqlHandle, Query);
@@ -416,9 +417,9 @@ namespace spell
         {
             while(Sql_NextRow(SqlHandle) == SQL_SUCCESS)
             {
-                int8* expansionCode;
+                char* contentTag;
                 CSpell* PSpell = nullptr;
-                uint16 id = Sql_GetUIntData(SqlHandle,0);
+                SpellID id = (SpellID)Sql_GetUIntData(SqlHandle,0);
 
                 if ((SPELLGROUP)Sql_GetIntData(SqlHandle, 3) == SPELLGROUP_BLUE)
                 {
@@ -443,15 +444,17 @@ namespace spell
                 PSpell->setBase(Sql_GetIntData(SqlHandle,12));
                 PSpell->setElement(Sql_GetIntData(SqlHandle,13));
                 PSpell->setZoneMisc(Sql_GetIntData(SqlHandle,14));
-                PSpell->setMultiplier(Sql_GetIntData(SqlHandle,15));
+                PSpell->setMultiplier((float)Sql_GetIntData(SqlHandle,15));
                 PSpell->setMessage(Sql_GetIntData(SqlHandle,16));
                 PSpell->setMagicBurstMessage(Sql_GetIntData(SqlHandle,17));
                 PSpell->setCE(Sql_GetIntData(SqlHandle,18));
                 PSpell->setVE(Sql_GetIntData(SqlHandle,19));
                 PSpell->setRequirements(Sql_GetIntData(SqlHandle,20));
 
-                Sql_GetData(SqlHandle, 21, &expansionCode, nullptr);
-                PSpell->setExpansionCode(expansionCode);
+                Sql_GetData(SqlHandle, 21, &contentTag, nullptr);
+                PSpell->setContentTag((int8*)contentTag);
+
+                PSpell->setRange(static_cast<float>(Sql_GetIntData(SqlHandle, 22)) / 10);
 
                 if(PSpell->getAOE())
                 {
@@ -459,13 +462,13 @@ namespace spell
                     PSpell->setRadius(10);
                 }
 
-                PSpellList[PSpell->getID()] = PSpell;
+                PSpellList[static_cast<uint16>(PSpell->getID())] = PSpell;
             }
         }
 
-        const int8* blueQuery = "SELECT blue_spell_list.spellid, blue_spell_list.mob_skill_id, blue_spell_list.set_points, \
+        const char* blueQuery = "SELECT blue_spell_list.spellid, blue_spell_list.mob_skill_id, blue_spell_list.set_points, \
                                 blue_spell_list.trait_category, blue_spell_list.trait_category_weight, blue_spell_list.primary_sc, \
-                                blue_spell_list.secondary_sc, spell_list.required_expansion \
+                                blue_spell_list.secondary_sc, spell_list.content_tag \
                              FROM blue_spell_list JOIN spell_list on blue_spell_list.spellid = spell_list.spellid;";
 
         ret = Sql_Query(SqlHandle, blueQuery);
@@ -474,10 +477,10 @@ namespace spell
         {
             while(Sql_NextRow(SqlHandle) == SQL_SUCCESS)
             {
-                int8* expansionCode;
-                Sql_GetData(SqlHandle, 7, &expansionCode, nullptr);
+                char* contentTag;
+                Sql_GetData(SqlHandle, 7, &contentTag, nullptr);
 
-                if (luautils::IsExpansionEnabled(expansionCode) == false){
+                if (luautils::IsContentEnabled(contentTag) == false){
                     continue;
                 }
 
@@ -506,26 +509,26 @@ namespace spell
             while(Sql_NextRow(SqlHandle) == SQL_SUCCESS)
             {
                 uint16 spellId = (uint16)Sql_GetUIntData(SqlHandle,0);
-                uint16 modID  = (uint16)Sql_GetUIntData(SqlHandle,1);
+                Mod modID  = static_cast<Mod>(Sql_GetUIntData(SqlHandle,1));
                 int16  value  = (int16) Sql_GetIntData (SqlHandle,2);
 
                 if (PSpellList[spellId])
                 {
-                    ((CBlueSpell*)PSpellList[spellId])->addModifier(new CModifier(modID,value));
+                    ((CBlueSpell*)PSpellList[spellId])->addModifier(CModifier(modID,value));
                 }
             }
         }
 
-        ret = Sql_Query(SqlHandle,"SELECT spellId, meritId, required_expansion FROM spell_list INNER JOIN merits ON spell_list.name = merits.name;");
+        ret = Sql_Query(SqlHandle,"SELECT spellId, meritId, content_tag FROM spell_list INNER JOIN merits ON spell_list.name = merits.name;");
 
         if( ret != SQL_ERROR && Sql_NumRows(SqlHandle) != 0)
         {
             while(Sql_NextRow(SqlHandle) == SQL_SUCCESS)
             {
-                int8* expansionCode;
-                Sql_GetData(SqlHandle, 2, &expansionCode, nullptr);
+                char* contentTag;
+                Sql_GetData(SqlHandle, 2, &contentTag, nullptr);
 
-                if (luautils::IsExpansionEnabled(expansionCode) == false){
+                if (luautils::IsContentEnabled(contentTag) == false){
                     continue;
                 }
 
@@ -551,23 +554,41 @@ namespace spell
     }
 
     //Get Spell By ID
-    CSpell* GetSpell(uint16 SpellID)
+    CSpell* GetSpell(SpellID SpellID)
     {
-        return PSpellList[SpellID];
+        DSP_DEBUG_BREAK_IF(static_cast<uint16>(SpellID) >= MAX_SPELL_ID);
+
+        auto id = static_cast<uint16>(SpellID);
+        if (id >= MAX_SPELL_ID)
+        {
+            return nullptr;
+        }
+        return PSpellList[id];
+    }
+
+    bool CanUseSpell(CBattleEntity* PCaster, SpellID SpellID)
+    {
+        CSpell* spell = GetSpell(SpellID);
+        return CanUseSpell(PCaster, spell);
     }
 
     //Check If user can cast spell
-    bool CanUseSpell(CBattleEntity* PCaster, uint16 SpellID)
+    bool CanUseSpell(CBattleEntity* PCaster, CSpell* spell)
     {
         bool usable = false;
-        CSpell* spell = GetSpell(SpellID);
+
         if (spell != nullptr)
         {
             uint8 JobMLVL = spell->getJob(PCaster->GetMJob());
             uint8 JobSLVL = spell->getJob(PCaster->GetSJob());
             uint8 requirements = spell->getRequirements();
 
-            if(PCaster->objtype == TYPE_MOB){
+            if (PCaster->objtype == TYPE_MOB || (PCaster->objtype == TYPE_PET && static_cast<CPetEntity*>(PCaster)->getPetType() == PETTYPE_AUTOMATON))
+            {
+                // cant cast cause im hidden or untargetable
+                if (PCaster->IsNameHidden() || static_cast<CMobEntity*>(PCaster)->IsUntargetable())
+                    return false;
+
                 // Mobs can cast any non-given char spell
                 return true;
             }
@@ -584,14 +605,14 @@ namespace spell
                 }
                 if (requirements & SPELLREQ_ADDENDUM_BLACK && PCaster->GetMJob() == JOB_SCH)
                 {
-                    if(!PCaster->StatusEffectContainer->HasStatusEffect(EFFECT_ADDENDUM_BLACK) && !PCaster->StatusEffectContainer->HasStatusEffect(EFFECT_ENLIGHTENMENT))
+                    if (!PCaster->StatusEffectContainer->HasStatusEffect({EFFECT_ADDENDUM_BLACK, EFFECT_ENLIGHTENMENT}))
                     {
                         usable = false;
                     }
                 }
                 else if (requirements & SPELLREQ_ADDENDUM_WHITE && PCaster->GetMJob() == JOB_SCH)
                 {
-                    if (!PCaster->StatusEffectContainer->HasStatusEffect(EFFECT_ADDENDUM_WHITE) && !PCaster->StatusEffectContainer->HasStatusEffect(EFFECT_ENLIGHTENMENT))
+                    if (!PCaster->StatusEffectContainer->HasStatusEffect({EFFECT_ADDENDUM_WHITE, EFFECT_ENLIGHTENMENT}))
                     {
                         usable = false;
                     }
@@ -602,8 +623,7 @@ namespace spell
                     {
                         if (requirements & SPELLREQ_UNBRIDLED_LEARNING)
                         {
-                            if (!PCaster->StatusEffectContainer->HasStatusEffect(EFFECT_UNBRIDLED_LEARNING) &&
-                                !PCaster->StatusEffectContainer->HasStatusEffect(EFFECT_UNBRIDLED_WISDOM))
+                            if (!PCaster->StatusEffectContainer->HasStatusEffect({EFFECT_UNBRIDLED_LEARNING, EFFECT_UNBRIDLED_WISDOM}))
                             {
                                 usable = false;
                             }
@@ -628,14 +648,14 @@ namespace spell
                 }
                 if (requirements & SPELLREQ_ADDENDUM_BLACK && PCaster->GetSJob() == JOB_SCH)
                 {
-                    if (!PCaster->StatusEffectContainer->HasStatusEffect(EFFECT_ADDENDUM_BLACK) && !PCaster->StatusEffectContainer->HasStatusEffect(EFFECT_ENLIGHTENMENT))
+                    if (!PCaster->StatusEffectContainer->HasStatusEffect({EFFECT_ADDENDUM_BLACK, EFFECT_ENLIGHTENMENT}))
                     {
                         usable = false;
                     }
                 }
                 else if (requirements & SPELLREQ_ADDENDUM_WHITE && PCaster->GetSJob() == JOB_SCH)
                 {
-                    if (!PCaster->StatusEffectContainer->HasStatusEffect(EFFECT_ADDENDUM_WHITE) && !PCaster->StatusEffectContainer->HasStatusEffect(EFFECT_ENLIGHTENMENT))
+                    if (!PCaster->StatusEffectContainer->HasStatusEffect({EFFECT_ADDENDUM_WHITE, EFFECT_ENLIGHTENMENT}))
                     {
                         usable = false;
                     }
@@ -646,8 +666,7 @@ namespace spell
                     {
                         if (requirements & SPELLREQ_UNBRIDLED_LEARNING)
                         {
-                            if (!PCaster->StatusEffectContainer->HasStatusEffect(EFFECT_UNBRIDLED_LEARNING) &&
-                                !PCaster->StatusEffectContainer->HasStatusEffect(EFFECT_UNBRIDLED_WISDOM))
+                            if (!PCaster->StatusEffectContainer->HasStatusEffect({EFFECT_UNBRIDLED_LEARNING, EFFECT_UNBRIDLED_WISDOM}))
                             {
                                 usable = false;
                             }
@@ -665,11 +684,11 @@ namespace spell
 
     // This is a utility method for mobutils, when we want to work out if we can give monsters a spell
     // but they are on an odd job (e.g. PLDs getting -ga3)
-    bool CanUseSpellWith(uint16 spellId, JOBTYPE job, uint8 level)
+    bool CanUseSpellWith(SpellID spellId, JOBTYPE job, uint8 level)
     {
         if (GetSpell(spellId) != nullptr)
         {
-            uint8 jobMLevel = PSpellList[spellId]->getJob(job);
+            uint8 jobMLevel = PSpellList[static_cast<size_t>(spellId)]->getJob(job);
 
             return level > jobMLevel;
         }
@@ -683,9 +702,9 @@ namespace spell
         // brd gets bonus radius from string skill
         if(spell->getSpellGroup() == SPELLGROUP_SONG && (spell->getValidTarget() & TARGET_SELF)){
             if(entity->objtype == TYPE_MOB || (entity->GetMJob() == JOB_BRD &&
-                entity->objtype == TYPE_PC && ((CCharEntity*)entity)->getEquip(SLOT_RANGED) && 
-                ((CItemWeapon*)((CCharEntity*)entity)->getEquip(SLOT_RANGED))->getSkillType() == SKILL_STR)){
-                total += ((float)entity->GetSkill(SKILL_STR) / 276) * 10;
+                entity->objtype == TYPE_PC && ((CCharEntity*)entity)->getEquip(SLOT_RANGED) &&
+                ((CItemWeapon*)((CCharEntity*)entity)->getEquip(SLOT_RANGED))->getSkillType() == SKILL_STRING_INSTRUMENT)){
+                total += ((float)entity->GetSkill(SKILL_STRING_INSTRUMENT) / 276) * 10;
             }
 
             if (total > 20){

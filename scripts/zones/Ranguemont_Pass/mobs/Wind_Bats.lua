@@ -2,13 +2,9 @@
 -- Area: Ranguemont Pass
 --  MOB: Wind Bats
 -----------------------------------
-
-require("scripts/globals/fieldsofvalor");
-
------------------------------------
--- onMobDeath
+require("scripts/globals/groundsofvalor");
 -----------------------------------
 
-function onMobDeath(mob,killer,ally)
-    checkGoVregime(ally,mob,602,1);
+function onMobDeath(mob, player, isKiller)
+    checkGoVregime(player,mob,602,1);
 end;

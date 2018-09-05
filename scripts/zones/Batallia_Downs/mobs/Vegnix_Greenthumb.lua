@@ -4,18 +4,12 @@
 -----------------------------------
 package.loaded["scripts/zones/Batallia_Downs/TextIDs"] = nil;
 -----------------------------------
-
-require("scripts/globals/settings");
-require("scripts/globals/keyitems");
 require("scripts/zones/Batallia_Downs/TextIDs");
+require("scripts/globals/keyitems");
 
------------------------------------
--- onMobDeath
------------------------------------
-
-function onMobDeath(mob,killer,ally)
-    if (ally:hasKeyItem(SEEDSPALL_ROSEUM) == false and ally:hasKeyItem(VIRIDIAN_KEY) == false) then
-        ally:addKeyItem(SEEDSPALL_ROSEUM);
-        ally:messageSpecial(KEYITEM_OBTAINED,SEEDSPALL_ROSEUM);
+function onMobDeath(mob, player, isKiller)
+    if (not player:hasKeyItem(dsp.ki.SEEDSPALL_ROSEUM) and not player:hasKeyItem(dsp.ki.VIRIDIAN_KEY)) then
+        player:addKeyItem(dsp.ki.SEEDSPALL_ROSEUM);
+        player:messageSpecial(KEYITEM_OBTAINED,dsp.ki.SEEDSPALL_ROSEUM);
     end
 end;

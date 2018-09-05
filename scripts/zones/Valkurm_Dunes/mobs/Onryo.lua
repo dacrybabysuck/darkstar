@@ -3,24 +3,16 @@
 --  MOB: Onryo
 -- Involved in Quest: Yomi Okuri
 -----------------------------------
-
 require("scripts/globals/keyitems");
-
------------------------------------
--- onMobSpawn Action
 -----------------------------------
 
 function onMobSpawn(mob)
 end;
 
------------------------------------
--- onMobDeath Action
------------------------------------
+function onMobDeath(mob, player, isKiller)
 
-function onMobDeath(mob,killer,ally)
-
-    if (ally:hasKeyItem(YOMOTSU_HIRASAKA)) then
-        ally:setVar("OkuriNMKilled",ally:getVar("OkuriNMKilled") + 1);
+    if (player:hasKeyItem(dsp.ki.YOMOTSU_HIRASAKA)) then
+        player:setVar("OkuriNMKilled",player:getVar("OkuriNMKilled") + 1);
     end
 
 end;

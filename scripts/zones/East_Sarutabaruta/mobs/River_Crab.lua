@@ -1,14 +1,12 @@
 -----------------------------------
 -- Area: East Sarutabaruta
 --  MOB: River Crab
+-- Note: PH for Duke Decapod
 -----------------------------------
-
 require("scripts/globals/fieldsofvalor");
-
------------------------------------
--- onMobDeath
+require("scripts/zones/East_Sarutabaruta/MobIDs");
 -----------------------------------
 
-function onMobDeath(mob,killer,ally)
-    checkRegime(ally,mob,92,1);
+function onMobDeath(mob, player, isKiller)
+    checkRegime(player,mob,92,1);
 end;

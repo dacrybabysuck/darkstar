@@ -1,13 +1,12 @@
 -----------------------------------
--- Area: Batallia Downs (105)
---  Mob: Carpenters Landing
+-- Area: Carpenters' Landing
+--  Mob: Tempest Tigron
 -----------------------------------
 
------------------------------------
--- onMobDeath
------------------------------------
+function onMobDeath(mob, player, isKiller)
+end;
 
-function onMobDeath(mob,killer,ally)
+function onMobDespawn(mob)
 
     -- Set Tempest Tigon's spawnpoint and respawn time (1-2 hours)
     UpdateNMSpawnPoint(mob:getID());

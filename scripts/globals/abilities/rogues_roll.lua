@@ -5,6 +5,7 @@
 -- Lucky Number: 5
 -- Unlucky Number: 9
 -- Level: 43
+-- Phantom Roll +1 Value: 1
 --
 -- Die Roll    |No THF  |With THF
 -- --------    -------  -----------
@@ -21,57 +22,52 @@
 -- 11          |19%     |25%
 -- 12+         |-6%     |-6%
 -----------------------------------
-
-require("scripts/globals/settings");
-require("scripts/globals/status");
-
------------------------------------
--- onAbilityCheck
+require("scripts/globals/settings")
+require("scripts/globals/ability")
+require("scripts/globals/status")
+require("scripts/globals/msg")
 -----------------------------------
 
 function onAbilityCheck(player,target,ability)
-    local effectID = getCorsairRollEffect(ability:getID());
-    ability:setRange(ability:getRange() + player:getMod(MOD_ROLL_RANGE));
-    if (player:hasStatusEffect(effectID) or player:hasBustEffect(effectID)) then
-        return MSGBASIC_ROLL_ALREADY_ACTIVE,0;
+    local effectID = dsp.effect.ROGUES_ROLL
+    ability:setRange(ability:getRange() + player:getMod(dsp.mod.ROLL_RANGE))
+    if (player:hasStatusEffect(effectID)) then
+        return dsp.msg.basic.ROLL_ALREADY_ACTIVE,0
+    elseif atMaxCorsairBusts(player) then
+        return dsp.msg.basic.CANNOT_PERFORM,0
     else
-        player:setLocalVar("THF_roll_bonus", 0);
-        return 0,0;
+        return 0,0
     end
-end;
+end
 
------------------------------------
--- onUseAbilityRoll
------------------------------------
+function onUseAbility(caster,target,ability,action)
+    if (caster:getID() == target:getID()) then
+        corsairSetup(caster, ability, action, dsp.effect.ROGUES_ROLL, dsp.job.THF)
+    end
+    local total = caster:getLocalVar("corsairRollTotal")
+    return applyRoll(caster,target,ability,action,total)
+end
 
-function onUseAbilityRoll(caster,target,ability,total)
-    local duration = 300 + caster:getMerit(MERIT_WINNING_STREAK)
+function applyRoll(caster,target,ability,action,total)
+    local duration = 300 + caster:getMerit(dsp.merit.WINNING_STREAK) + caster:getMod(dsp.mod.PHANTOM_DURATION)
     local effectpowers = {2, 2, 3, 4, 12, 5, 6, 6, 1, 8, 19, 6}
     local effectpower = effectpowers[total]
-    local jobBonus = caster:getLocalVar("THF_roll_bonus");
-
-    if (total < 12) then -- see chaos_roll.lua for comments
-        if (jobBonus == 0) then
-            if (caster:hasPartyJob(JOB_THF) or math.random(0, 99) < caster:getMod(MOD_JOB_BONUS_CHANCE)) then
-                jobBonus = 1;
-            else
-                jobBonus = 2;
-            end
-        end
-        if (jobBonus == 1) then
-            effectpower = effectpower + 6;
-        end
-        if (target:getID() == caster:getID()) then
-            caster:setLocalVar("THF_roll_bonus", jobBonus);
-        end
+    if (caster:getLocalVar("corsairRollBonus") == 1 and total < 12) then
+        effectpower = effectpower + 6
     end
-
-    if (caster:getMainJob() == JOB_COR and caster:getMainLvl() < target:getMainLvl()) then
-        effectpower = effectpower * (caster:getMainLvl() / target:getMainLvl());
-    elseif (caster:getSubJob() == JOB_COR and caster:getSubLvl() < target:getMainLvl()) then
-        effectpower = effectpower * (caster:getSubLvl() / target:getMainLvl());
+-- Apply Additional Phantom Roll+ Buff
+    local phantomBase = 1 -- Base increment buff
+    local effectpower = effectpower + (phantomBase * phantombuffMultiple(caster))
+-- Check if COR Main or Sub
+    if (caster:getMainJob() == dsp.job.COR and caster:getMainLvl() < target:getMainLvl()) then
+        effectpower = effectpower * (caster:getMainLvl() / target:getMainLvl())
+    elseif (caster:getSubJob() == dsp.job.COR and caster:getSubLvl() < target:getMainLvl()) then
+        effectpower = effectpower * (caster:getSubLvl() / target:getMainLvl())
     end
-    if (target:addCorsairRoll(caster:getMainJob(), caster:getMerit(MERIT_BUST_DURATION), EFFECT_ROGUES_ROLL, effectpower, 0, duration, caster:getID(), total, MOD_CRITHITRATE) == false) then
-        ability:setMsg(423);
+    if (target:addCorsairRoll(caster:getMainJob(), caster:getMerit(dsp.merit.BUST_DURATION), dsp.effect.ROGUES_ROLL, effectpower, 0, duration, caster:getID(), total, dsp.mod.CRITHITRATE) == false) then
+        ability:setMsg(dsp.msg.basic.ROLL_MAIN_FAIL)
+    elseif total > 11 then
+        ability:setMsg(dsp.msg.basic.DOUBLEUP_BUST)
     end
-end;
+    return total
+end

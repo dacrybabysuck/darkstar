@@ -10,20 +10,12 @@ require("scripts/globals/quests");
 require("scripts/globals/missions");
 require("scripts/zones/Bearclaw_Pinnacle/TextIDs");
 
------------------------------------
--- onTrade Action
------------------------------------
-
 function onTrade(player,npc,trade)
     if (TradeBCNM(player,player:getZoneID(),trade,npc)) then
         return;
     end
     
 end;
-
------------------------------------
--- onTrigger Action
------------------------------------
 
 function onTrigger(player,npc)
     
@@ -35,13 +27,9 @@ function onTrigger(player,npc)
     
 end;
 
------------------------------------
--- onEventUpdate
------------------------------------
-
 function onEventUpdate(player,csid,option)
---printf("onUpdate CSID: %u",csid);
---printf("onUpdate RESULT: %u",option);
+    -- printf("onUpdate CSID: %u",csid);
+    -- printf("onUpdate RESULT: %u",option);
 
     if (EventUpdateBCNM(player,csid,option)) then
         return;
@@ -54,8 +42,8 @@ end;
 -----------------------------------
 
 function onEventFinish(player,csid,option)
---printf("onFinish CSID: %u",csid);
---printf("onFinish RESULT: %u",option);
+    -- printf("onFinish CSID: %u",csid);
+    -- printf("onFinish RESULT: %u",option);
     if (EventFinishBCNM(player,csid,option)) then
         return;
     end

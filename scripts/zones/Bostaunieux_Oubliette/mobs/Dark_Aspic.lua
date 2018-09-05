@@ -1,32 +1,16 @@
 -----------------------------------
 -- Area: Bostaunieux Oubliette (167)
 --  Mob: Dark_Aspic
+-- Note: PH for Sewer Syrup
 -----------------------------------
-
 require("scripts/zones/Bostaunieux_Oubliette/MobIDs");
 require("scripts/globals/groundsofvalor");
+require("scripts/globals/mobs");
 
------------------------------------
--- onMobDeath
------------------------------------
-
-function onMobDeath(mob,killer,ally)
-
-    checkGoVregime(ally,mob,610,1); -- Check GOV Page
-
-    local mob = mob:getID();
-    if (Sewer_Syrup_PH[mob] ~= nil) then
-
-        local ToD = GetServerVariable("[POP]Sewer_Syrup");
-        if (ToD <= os.time(t) and GetMobAction(Sewer_Syrup) == 0) then
-            if (math.random((1),(10)) == 5) then
-                UpdateNMSpawnPoint(Sewer_Syrup);
-                GetMobByID(Sewer_Syrup):setRespawnTime(GetMobRespawnTime(mob));
-                SetServerVariable("[PH]Sewer_Syrup", mob);
-                DeterMob(mob, true);
-            end
-        end
-    end
-
+function onMobDeath(mob, player, isKiller)
+    checkGoVregime(player,mob,610,1);
 end;
 
+function onMobDespawn(mob)
+    phOnDespawn(mob,SEWER_SYRUP_PH,10,math.random(7200,14400)); -- 2 to 4 hours
+end;

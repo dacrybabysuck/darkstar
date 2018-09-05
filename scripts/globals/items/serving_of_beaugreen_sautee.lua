@@ -5,50 +5,34 @@
 -----------------------------------------
 -- Agility 1
 -- Vitality -1
--- Ranged ATT % 7
--- Ranged ATT Cap 15
+-- Ranged Acc % 7
+-- Ranged Acc Cap 15
 -----------------------------------------
-
-require("scripts/globals/status");
-
------------------------------------------
--- OnItemCheck
+require("scripts/globals/status")
 -----------------------------------------
 
 function onItemCheck(target)
-local result = 0;
-    if (target:hasStatusEffect(EFFECT_FOOD) == true or target:hasStatusEffect(EFFECT_FIELD_SUPPORT_FOOD) == true) then
-        result = 246;
+    local result = 0
+    if (target:hasStatusEffect(dsp.effect.FOOD) == true or target:hasStatusEffect(dsp.effect.FIELD_SUPPORT_FOOD) == true) then
+        result = 246
     end
-return result;
-end;
-
------------------------------------------
--- OnItemUse
------------------------------------------
+    return result
+end
 
 function onItemUse(target)
-    target:addStatusEffect(EFFECT_FOOD,0,0,10800,4572);
-end;
-
------------------------------------------
--- onEffectGain Action
------------------------------------------
+    target:addStatusEffect(dsp.effect.FOOD,0,0,10800,4572)
+end
 
 function onEffectGain(target,effect)
-    target:addMod(MOD_AGI, 1);
-    target:addMod(MOD_VIT, -1);
-    target:addMod(MOD_FOOD_RATTP, 7);
-    target:addMod(MOD_FOOD_RATT_CAP, 15);
-end;
+    target:addMod(dsp.mod.AGI, 1)
+    target:addMod(dsp.mod.VIT, -1)
+    target:addMod(dsp.mod.FOOD_RACCP, 7)
+    target:addMod(dsp.mod.FOOD_RACC_CAP, 15)
+end
 
------------------------------------------
--- onEffectLose Action
------------------------------------------
-
-function onEffectLose(target,effect)
-    target:delMod(MOD_AGI, 1);
-    target:delMod(MOD_VIT, -1);
-    target:delMod(MOD_FOOD_RATTP, 7);
-    target:delMod(MOD_FOOD_RATT_CAP, 15);
-end;
+function onEffectLose(target, effect)
+    target:delMod(dsp.mod.AGI, 1)
+    target:delMod(dsp.mod.VIT, -1)
+    target:delMod(dsp.mod.FOOD_RACCP, 7)
+    target:delMod(dsp.mod.FOOD_RACC_CAP, 15)
+end

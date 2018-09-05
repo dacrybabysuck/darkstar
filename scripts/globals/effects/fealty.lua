@@ -3,30 +3,16 @@
 --
 --
 -----------------------------------
-
-require("scripts/globals/status");
-
------------------------------------
--- onEffectGain Action
+require("scripts/globals/status")
 -----------------------------------
 
 function onEffectGain(target,effect)
-   target:addMod(MOD_UDMGMAGIC,-100);
-   target:addMod(MOD_MEVA,200);
-end;
-
------------------------------------
--- onEffectTick Action
------------------------------------
+   target:addMod(dsp.mod.MEVA,200)
+end
 
 function onEffectTick(target,effect)
-end;
-
------------------------------------
--- onEffectLose Action
------------------------------------
+end
 
 function onEffectLose(target,effect)
-   target:delMod(MOD_UDMGMAGIC,-100);
-   target:delMod(MOD_MEVA,200);
-end;
+   target:delMod(dsp.mod.MEVA,200)
+end

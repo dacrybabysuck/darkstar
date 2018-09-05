@@ -3,30 +3,14 @@
 --  MOB: Mandragora
 -- Note: PH for Tom Tit Tat
 -----------------------------------
-
-require("scripts/globals/fieldsofvalor");
 require("scripts/zones/West_Sarutabaruta/MobIDs");
+require("scripts/globals/fieldsofvalor");
+require("scripts/globals/mobs");
 
------------------------------------
--- onMobDeath
------------------------------------
+function onMobDeath(mob, player, isKiller)
+    checkRegime(player,mob,26,1);
+end;
 
-function onMobDeath(mob,killer,ally)
-
-    checkRegime(ally,mob,26,1);
-
-    mob = mob:getID();
-    if (Tom_Tit_Tat_PH[mob] ~= nil) then
-
-        ToD = GetServerVariable("[POP]Tom_Tit_Tat");
-        if (ToD <= os.time(t) and GetMobAction(Tom_Tit_Tat) == 0) then
-            if (math.random((1),(15)) == 5) then
-                UpdateNMSpawnPoint(Tom_Tit_Tat);
-                GetMobByID(Tom_Tit_Tat):setRespawnTime(GetMobRespawnTime(mob));
-                SetServerVariable("[PH]Tom_Tit_Tat", mob);
-                DeterMob(mob, true);
-            end
-        end
-    end
-
+function onMobDespawn(mob)
+    phOnDespawn(mob,TOM_TIT_TAT_PH,7,math.random(3600,7200)); -- 1 to 2 hours
 end;

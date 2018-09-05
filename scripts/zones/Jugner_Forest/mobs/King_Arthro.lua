@@ -2,15 +2,40 @@
 -- Area: Jugner Forest
 --  MOB: King Arthro
 -----------------------------------
-
-require("scripts/globals/titles");
-
+mixins = {require("scripts/mixins/job_special")};
+require("scripts/globals/status");
+require("scripts/globals/msg");
 -----------------------------------
--- onMonsterMagicPrepare
------------------------------------
+
+function onMobInitialize(mob)
+    mob:setMobMod(dsp.mobMod.ADD_EFFECT, 1);
+end;
+
+function onMobSpawn(mob)
+    local KingArthroID = mob:getID();
+
+    -- Use King Arthro ID to determine Knight Crab Id's, then set their respawn to 0 so they don't spawn while KA is up
+    for offset = 1, 10 do
+        GetMobByID(KingArthroID - offset):setRespawnTime(0);
+    end
+
+    -- 20 minute rage timer
+    mob:setMobMod(dsp.mobMod.RAGE, 1200);
+end;
+
+function onAdditionalEffect(mob,target,damage)
+    local procRate = 10; -- No retail data, so we guessed at it.
+    -- Can't proc it if enwater is up, if player full resists, or is just plain lucky.
+    if (procRate > math.random(1,100) or mob:hasStatusEffect(dsp.effect.ENWATER)
+    or applyResistanceAddEffect(mob, target, dsp.magic.ele.ICE, 0) <= 0.5) then
+        return 0,0,0;
+    else
+        target:addStatusEffect(dsp.effect.PARALYSIS, 20, 0, 30); -- Potency unconfirmed
+        return dsp.subEffect.PARALYSIS, dsp.msg.basic.ADD_EFFECT_STATUS, dsp.effect.PARALYSIS;
+    end
+end;
 
 function onMonsterMagicPrepare(mob, target)
-
     -- Instant cast on spells - Waterga IV, Poisonga II, Drown, and Enwater
     local rnd = math.random();
 
@@ -23,12 +48,18 @@ function onMonsterMagicPrepare(mob, target)
     else
         return 105; -- Enwater
     end
-
 end;
 
------------------------------------
--- onMobDeath
------------------------------------
+function onMobDeath(mob, player, isKiller)
+end;
 
-function onMobDeath(mob, killer, ally)
+function onMobDespawn(mob)
+    local KingArthroID = mob:getID();
+
+    GetMobByID(KingArthroID):setLocalVar("[POP]King_Arthro", 0);
+
+    -- Set temporary respawn of 24 hours + 5 minutes
+    for offset = 1, 10 do
+        GetMobByID(KingArthroID - offset):setRespawnTime(86700);
+    end
 end;

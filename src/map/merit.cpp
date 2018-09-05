@@ -296,7 +296,7 @@ bool CMeritPoints::AddLimitPoints(uint16 points)
 			return false;
 		}
 
-        uint8 MeritPoints = dsp_min(m_MeritPoints + m_LimitPoints / MAX_LIMIT_POINTS, map_config.max_merit_points + GetMeritValue(MERIT_MAX_MERIT, m_PChar));
+        uint8 MeritPoints = std::min(m_MeritPoints + m_LimitPoints / MAX_LIMIT_POINTS, map_config.max_merit_points + GetMeritValue(MERIT_MAX_MERIT, m_PChar));
 
         m_LimitPoints = m_LimitPoints % MAX_LIMIT_POINTS;
 
@@ -317,7 +317,7 @@ bool CMeritPoints::AddLimitPoints(uint16 points)
 
 void CMeritPoints::SetLimitPoints(uint16 points)
 {
-    m_LimitPoints = dsp_min(points, MAX_LIMIT_POINTS - 1);
+    m_LimitPoints = std::min<uint16>(points, MAX_LIMIT_POINTS - 1);
 }
 
 /************************************************************************
@@ -328,7 +328,7 @@ void CMeritPoints::SetLimitPoints(uint16 points)
 
 void CMeritPoints::SetMeritPoints(uint16 points)
 {
-    m_MeritPoints = dsp_min(points, map_config.max_merit_points + GetMeritValue(MERIT_MAX_MERIT, m_PChar));
+    m_MeritPoints = std::min<uint8>((uint8)points, map_config.max_merit_points + GetMeritValue(MERIT_MAX_MERIT, m_PChar));
 }
 
 /************************************************************************
@@ -372,7 +372,6 @@ const Merit_t* CMeritPoints::GetMeritByIndex(uint16 index)
 	return  &merits[index];
 }
 
-
 /************************************************************************
 *                                                                       *
 *  Получаем указатель на искомый merit                                  *
@@ -381,9 +380,11 @@ const Merit_t* CMeritPoints::GetMeritByIndex(uint16 index)
 
 Merit_t* CMeritPoints::GetMeritPointer(MERIT_TYPE merit)
 {
-    DSP_DEBUG_BREAK_IF(!IsMeritExist(merit));
-
-    return &Categories[GetMeritCategory(merit)][GetMeritID(merit)];
+    if (IsMeritExist(merit))
+    {
+        return &Categories[GetMeritCategory(merit)][GetMeritID(merit)];
+    }
+    return nullptr;
 }
 
 /************************************************************************
@@ -410,6 +411,9 @@ void CMeritPoints::RaiseMerit(MERIT_TYPE merit)
             }
         }
 		PMerit->count++;
+
+        // Reset traits
+        charutils::BuildingCharTraitsTable(m_PChar);
     }
 }
 
@@ -433,6 +437,9 @@ void CMeritPoints::LowerMerit(MERIT_TYPE merit)
         {
             charutils::DeleteSpell(m_PChar, PMerit->spellid);
             m_PChar->pushPacket(new CCharSpellsPacket(m_PChar));
+
+            // Reset traits
+            charutils::BuildingCharTraitsTable(m_PChar);
         }
     }
 }
@@ -459,13 +466,16 @@ int32 CMeritPoints::GetMeritValue(MERIT_TYPE merit, CCharEntity* PChar)
     Merit_t* PMerit = GetMeritPointer(merit);
 	uint8 meritValue = 0;
 
-    if (PMerit->catid < 5 || (PMerit->jobs & (1 << (PChar->GetMJob() - 1)) && PChar->GetMLevel() >= 75))
-        meritValue = dsp_min(PMerit->count, cap[PChar->GetMLevel()]);
+    if (PMerit)
+    {
+        if (PMerit->catid < 5 || (PMerit->jobs & (1 << (PChar->GetMJob() - 1)) && PChar->GetMLevel() >= 75))
+            meritValue = std::min(PMerit->count, cap[PChar->GetMLevel()]);
 
-    if (PMerit->catid == 8 && PChar->GetMLevel() < 96)
-        meritValue = 0;
+        if (PMerit->catid == 25 && PChar->GetMLevel() < 96) // categoryID 25 is for merit weaponskills, which only apply if the player is lv 96+
+            meritValue = 0;
 
-	meritValue *= PMerit->value;
+        meritValue *= PMerit->value;
+    }
 
 	return meritValue;
 }
@@ -501,7 +511,7 @@ namespace meritNameSpace
 			// issue with unknown catagories causing massive confusion
 
             uint16 index = 0;			// global merit template count (to 255)
-			int8 catIndex = 0;			// global merit catagory count (to 51)
+			uint8 catIndex = 0;			// global merit catagory count (to 51)
 			int8 previousCatIndex = 0;  // will be set on every loop, used for detecting a catagory change
 			int8 catMeritIndex = 0;		// counts number of merits in a catagory
 

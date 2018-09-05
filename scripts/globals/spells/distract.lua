@@ -1,38 +1,42 @@
 -----------------------------------------
 -- Spell: Distract
 -----------------------------------------
-
-require("scripts/globals/status");
-require("scripts/globals/magic");
-
------------------------------------------
--- OnSpellCast
+require("scripts/globals/status")
+require("scripts/globals/magic")
+require("scripts/globals/msg")
 -----------------------------------------
 
 function onMagicCastingCheck(caster,target,spell)
-    return 0;
-end;
+    return 0
+end
 
 function onSpellCast(caster,target,spell)
 
     -- Pull base stats.
-    local dINT = (caster:getStat(MOD_INT) - target:getStat(MOD_INT));
-    
+    local dMND = (caster:getStat(dsp.mod.MND) - target:getStat(dsp.mod.MND))
+
     -- Base power.  May need more research.
-    local power = 35;
+    local power = 35
 
     -- Duration, including resistance.  Unconfirmed.
-    local duration = 120 * applyResistanceEffect(caster,spell,target,dINT,35,0,EFFECT_EVASION_DOWN);
+    local duration = 120
+    local params = {}
+    params.diff = nil
+    params.attribute = dsp.mod.MND
+    params.skillType = 35
+    params.bonus = 0
+    params.effect = dsp.effect.EVASION_DOWN
+    duration = duration * applyResistanceEffect(caster, target, spell, params)
 
-    if (duration >= 60) then --Do it!
-
-        if (target:addStatusEffect(EFFECT_EVASION_DOWN,power,0,duration)) then
-            spell:setMsg(236);
+    if (duration >= 60) then -- Do it!
+        if (target:addStatusEffect(dsp.effect.EVASION_DOWN,power,0,duration)) then
+            spell:setMsg(dsp.msg.basic.MAGIC_ENFEEB_IS)
         else
-            spell:setMsg(75);
+            spell:setMsg(dsp.msg.basic.MAGIC_NO_EFFECT)
         end
     else
-        spell:setMsg(85);
+        spell:setMsg(dsp.msg.basic.MAGIC_RESIST)
     end
-    return EFFECT_EVASION_DOWN;
-end;
+
+    return dsp.effect.EVASION_DOWN
+end

@@ -1,18 +1,12 @@
 -----------------------------------
 -- Area: Jugner Forest (S)
--- NPC:  Decrepit Gnole
------------------------------------
------------------------------------
--- onMobSpawn Action
+--  NPC: Decrepit Gnole
 -----------------------------------
 
 function onMobSpawn(mob)
     mob:setLocalVar("transformTime", os.time())
 end;
 
------------------------------------
--- onMobRoam Action
------------------------------------
 function onMobRoam(mob)
     local changeTime = mob:getLocalVar("transformTime");
     local roamChance = math.random(1,100);
@@ -29,11 +23,7 @@ function onMobRoam(mob)
     end
 end;
 
------------------------------------
--- onMobEngaged
 -- Change forms every 60 seconds
------------------------------------
-
 function onMobEngaged(mob,target)
     local changeTime = mob:getLocalVar("changeTime");
     local chance = math.random(1,100);
@@ -48,4 +38,7 @@ function onMobEngaged(mob,target)
             mob:setLocalVar("changeTime", mob:getBattleTime());
         end
     end
+end;
+
+function onMobDeath(mob, player, isKiller)
 end;

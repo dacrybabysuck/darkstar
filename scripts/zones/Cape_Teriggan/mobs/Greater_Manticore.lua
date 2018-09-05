@@ -3,27 +3,14 @@
 --  MOB: Greater Manticore
 -- Note: Place Holder for Frostmane
 -----------------------------------
-
 require("scripts/zones/Cape_Teriggan/MobIDs");
 require("scripts/globals/fieldsofvalor");
+require("scripts/globals/mobs");
 
------------------------------------
--- onMobDeath
------------------------------------
+function onMobDeath(mob, player, isKiller)
+    checkRegime(player,mob,108,2);
+end;
 
-function onMobDeath(mob,killer,ally)
-    checkRegime(ally,mob,108,2);
-    local mob = mob:getID();
-    if (Frostmane_PH[mob] ~= nil) then
-
-        local ToD = GetServerVariable("[POP]Frostmane");
-        if (ToD <= os.time(t) and GetMobAction(Frostmane) == 0) then
-            if (math.random((1),(20)) == 5) then
-                UpdateNMSpawnPoint(Frostmane);
-                GetMobByID(Frostmane):setRespawnTime(GetMobRespawnTime(mob));
-                SetServerVariable("[PH]Frostmane", mob);
-                DeterMob(mob, true);
-            end
-        end
-    end
+function onMobDespawn(mob)
+    phOnDespawn(mob,FROSTMANE_PH,5,math.random(3600,21600)); -- 1 to 6 hours
 end;

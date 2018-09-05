@@ -3,22 +3,13 @@
 -- Zone: Fort_Karugo-Narugo_[S] (96)
 --
 -----------------------------------
-package.loaded["scripts/zones/Fort_Karugo-Narugo_[S]/TextIDs"] = nil;
------------------------------------
-
-require("scripts/globals/settings");
-require("scripts/zones/Fort_Karugo-Narugo_[S]/TextIDs");
-
------------------------------------
--- onInitialize
+require("scripts/zones/Fort_Karugo-Narugo_[S]/MobIDs");
+require("scripts/globals/weather");
+require("scripts/globals/status");
 -----------------------------------
 
 function onInitialize(zone)
 end;
-
------------------------------------
--- onZoneIn
------------------------------------
 
 function onZoneIn(player,prevZone)
     local cs = -1;
@@ -28,27 +19,22 @@ function onZoneIn(player,prevZone)
     return cs;
 end;
 
------------------------------------
--- onRegionEnter
------------------------------------
-
 function onRegionEnter(player,region)
 end;
 
------------------------------------
--- onEventUpdate
------------------------------------
-
-function onEventUpdate(player,csid,option)
-    -- printf("CSID: %u",csid);
-    -- printf("RESULT: %u",option);
+function onZoneWeatherChange(weather)
+    npc = GetNPCByID(FORT_KN_INDESCRIPT_MARKINGS);
+    if (npc ~= nil) then
+        if (weather == dsp.weather.DUST_STORM or weather == dsp.weather.SAND_STORM) then
+            npc:setStatus(dsp.status.DISAPPEAR);
+        else
+            npc:setStatus(dsp.status.NORMAL);
+        end
+    end
 end;
 
------------------------------------
--- onEventFinish
------------------------------------
+function onEventUpdate(player,csid,option)
+end;
 
 function onEventFinish(player,csid,option)
-    -- printf("CSID: %u",csid);
-    -- printf("RESULT: %u",option);
 end;

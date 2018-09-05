@@ -27,16 +27,14 @@
 #include "../../common/cbasetypes.h"
 #include "../../common/lua/lunar.h"
 
-#include "../status_effect.h"
-
-
+class CStatusEffect;
 class CLuaStatusEffect
 {
     CStatusEffect *m_PLuaStatusEffect;
 
 public:
 
-    static const int8 className[];
+    static const char className[];
     static Lunar<CLuaStatusEffect>::Register_t methods[];
 
     CLuaStatusEffect(lua_State*);
@@ -70,6 +68,7 @@ public:
     int32 resetStartTime(lua_State*);
 
     int32 addMod(lua_State*);
+    int32 getFlag(lua_State*);
     int32 setFlag(lua_State*);
     int32 unsetFlag(lua_State*);
 };

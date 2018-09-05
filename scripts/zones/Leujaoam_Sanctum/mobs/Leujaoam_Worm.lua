@@ -3,31 +3,11 @@
 --  MOB: Leujaoam Worm
 -----------------------------------
 
------------------------------------
--- onMobSpawn Action
------------------------------------
-
 function onMobSpawn(mob)
 end;
 
------------------------------------
--- onMobEngaged Action
------------------------------------
-
-function onMobEngaged(mob,target)
-
+function onMobDeath(mob, player, isKiller)
 end;
-
------------------------------------
--- onMobDeath
------------------------------------
-
-function onMobDeath(mob, killer, ally)
-end;
-
------------------------------------
--- onMobDespawn
------------------------------------
 
 function onMobDespawn(mob)
     local instance = mob:getInstance();

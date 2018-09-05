@@ -26,8 +26,8 @@
 #include "../entities/charentity.h"
 #include "../conquest_system.h"
 
-#include "../ai/ai_char_normal.h"
-#include "../ai/ai_char_prisoner.h"
+#include "../ai/ai_container.h"
+#include "../ai/controllers/player_controller.h"
 
 /************************************************************************
 *                                                                       *
@@ -45,11 +45,7 @@ namespace jailutils
 
     bool InPrison(CCharEntity* PChar)
     {
-        if(!(PChar->nameflags.flags & FLAG_GM) && PChar->getZone() == ZONE_MORDION_GAOL)
-        {
-            return true;
-        }
-        return false;
+        return PChar->m_GMlevel == 0 && PChar->getZone() == ZONE_MORDION_GAOL;
     }
 
     /************************************************************************
@@ -60,8 +56,7 @@ namespace jailutils
 
     void Add(CCharEntity* PChar)
     {
-        delete PChar->PBattleAI;
-        PChar->PBattleAI = new CAICharPrisoner(PChar);
+        PChar->PAI->SetController(nullptr);
 
         // TODO:
     }
@@ -74,8 +69,7 @@ namespace jailutils
 
     void Del(CCharEntity* PChar)
     {
-        delete PChar->PBattleAI;
-        PChar->PBattleAI = new CAICharNormal(PChar);
+        PChar->PAI->SetController(std::make_unique<CPlayerController>(PChar));
 
         // TODO:
     }

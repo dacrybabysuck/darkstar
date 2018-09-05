@@ -3,29 +3,14 @@
 --  MOB: Typhoon Wyvern
 -- Note: Place holder Ungur
 -----------------------------------
-
 require("scripts/zones/Gustav_Tunnel/MobIDs");
+require("scripts/globals/groundsofvalor");
+require("scripts/globals/mobs");
 
------------------------------------
--- onMobDeath
------------------------------------
+function onMobDeath(mob, player, isKiller)
+    checkGoVregime(player,mob,769,2);
+end;
 
-function onMobDeath(mob,killer,ally)
-
-    checkGoVregime(ally,mob,769,2);
-
-    local mob = mob:getID();
-    if (Ungur_PH[mob] ~= nil) then
-
-        local ToD = GetServerVariable("[POP]Ungur");
-        if (ToD <= os.time(t) and GetMobAction(Ungur) == 0) then
-            if (math.random((1),(20)) == 5) then
-                UpdateNMSpawnPoint(Ungur);
-                GetMobByID(Ungur):setRespawnTime(GetMobRespawnTime(mob));
-                SetServerVariable("[PH]Ungur", mob);
-                DeterMob(mob, true);
-            end
-        end
-    end
-
+function onMobDespawn(mob)
+    phOnDespawn(mob,UNGUR_PH,5,7200); -- 2 hours
 end;

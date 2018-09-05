@@ -27,16 +27,14 @@
 #include "../../common/cbasetypes.h"
 #include "../../common/lua/lunar.h"
 
-#include "../region.h"
-
-
+class CRegion;
 class CLuaRegion
 {
     CRegion* m_PLuaRegion;
 
 public:
 
-    static const int8 className[];
+    static const char className[];
     static Lunar<CLuaRegion>::Register_t methods[];
 
     CLuaRegion(lua_State*);

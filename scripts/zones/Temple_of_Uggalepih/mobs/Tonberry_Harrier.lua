@@ -2,29 +2,17 @@
 -- Area: Temple of Uggalepih
 --  MOB: Tonberry Harrier
 -----------------------------------
-
------------------------------------
--- onMobSpawn Action
------------------------------------
+mixins = {require("scripts/mixins/families/tonberry")}
+require("scripts/globals/groundsofvalor");
 
 function onMobSpawn(mob)
 end;
 
------------------------------------
--- onMobDeath
------------------------------------
-
-function onMobDeath(mob,killer,ally)
-
-    checkGoVregime(ally,mob,790,1);
-    checkGoVregime(ally,mob,791,1);
-    checkGoVregime(ally,mob,792,1);
-    checkGoVregime(ally,mob,793,1);
-    checkGoVregime(ally,mob,794,1);
-    checkGoVregime(ally,mob,795,1);
-
-    local kills = ally:getVar("EVERYONES_GRUDGE_KILLS");
-    if (kills < 480) then
-        ally:setVar("EVERYONES_GRUDGE_KILLS",kills + 1);
-    end
+function onMobDeath(mob, player, isKiller)
+    checkGoVregime(player,mob,790,1);
+    checkGoVregime(player,mob,791,1);
+    checkGoVregime(player,mob,792,1);
+    checkGoVregime(player,mob,793,1);
+    checkGoVregime(player,mob,794,1);
+    checkGoVregime(player,mob,795,1);
 end;

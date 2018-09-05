@@ -3,28 +3,14 @@
 --  MOB: Sabotender Sediendo
 -- Note: Place Holder for Sabotender Mariachi
 -----------------------------------
-
 require("scripts/zones/Kuftal_Tunnel/MobIDs");
+require("scripts/globals/groundsofvalor");
+require("scripts/globals/mobs");
 
------------------------------------
--- onMobDeath
------------------------------------
+function onMobDeath(mob, player, isKiller)
+    checkGoVregime(player,mob,738,2);
+end;
 
-function onMobDeath(mob,killer,ally)
-
-    checkGoVregime(ally,mob,738,2);
-
-    local mob = mob:getID();
-    if (Sabotender_Mariachi_PH[mob] ~= nil) then
-
-        local ToD = GetServerVariable("[POP]Sabotender_Mariachi");
-        if (ToD <= os.time(t) and GetMobAction(Sabotender_Mariachi) == 0) then
-            if (math.random((1),(20)) == 5) then
-                UpdateNMSpawnPoint(Sabotender_Mariachi);
-                GetMobByID(Sabotender_Mariachi):setRespawnTime(GetMobRespawnTime(mob));
-                SetServerVariable("[PH]Sabotender_Mariachi", mob);
-                DeterMob(mob, true);
-            end
-        end
-    end
+function onMobDespawn(mob)
+    phOnDespawn(mob,SABOTENDER_MARIACHI_PH,5,math.random(10800,28800)); -- 3 to 8 hours
 end;

@@ -1,23 +1,15 @@
 -----------------------------------------
---    ID: 5203
---    Piece of Hume Mochi
---    Enchantment: 60Min, Costume - Hume child (male)
+-- ID: 5203
+-- Piece of Hume Mochi
+-- Enchantment: 60Min, Costume - Hume child (male)
 -----------------------------------------
-
-require("scripts/globals/status");
-
------------------------------------------
--- OnItemCheck
+require("scripts/globals/status")
 -----------------------------------------
 
 function onItemCheck(target)
-    return target:canUseCostume();
-end;
-
------------------------------------------
--- OnItemUse
------------------------------------------
+    return target:canUseCostume()
+end
 
 function onItemUse(target)
-    target:addStatusEffect(EFFECT_COSTUME,114,0,3600);
-end;
+    target:addStatusEffect(dsp.effect.COSTUME,114,0,3600)
+end

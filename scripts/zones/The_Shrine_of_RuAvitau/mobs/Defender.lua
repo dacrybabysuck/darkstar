@@ -2,17 +2,11 @@
 -- Area: The Shrine of Ru'Avitau
 --  MOB: Defender
 -----------------------------------
-
------------------------------------
--- onMobInitialize Action
+require("scripts/globals/groundsofvalor");
 -----------------------------------
 
 function onMobInitialize(mob)
 end;
-
------------------------------------
--- onMobSpawn
------------------------------------
 
 function onMobSpawn(mob)
 
@@ -21,19 +15,15 @@ function onMobSpawn(mob)
 
 end;
 
------------------------------------
--- onMobFight
------------------------------------
-
 function onMobFight(mob,target)
 
     local Defender = mob:getID();
     local AuraGear = Defender + 1;
     local ExtraVar = GetMobByID(Defender):getLocalVar("1");
 
-   -- Summons a Defender every 15 seconds.
-   -- TODO: Casting animation for before summons. When he spawns them isn't exactly retail accurate.
-   -- Defenders can also still spawn the AuraGears while sleeping, etc.
+    -- Summons a Defender every 15 seconds.
+    -- TODO: Casting animation for before summons. When he spawns them isn't exactly retail accurate.
+    -- Defenders can also still spawn the AuraGears while sleeping, etc.
 
     if (GetMobAction(AuraGear) == 16) then
         GetMobByID(AuraGear):updateEnmity(target);
@@ -52,10 +42,6 @@ function onMobFight(mob,target)
 
 end;
 
------------------------------------
--- onMobDisengage
------------------------------------
-
 function onMobDisengage(mob)
 
     local Defender = mob:getID();
@@ -69,28 +55,10 @@ function onMobDisengage(mob)
 
 end;
 
------------------------------------
--- onMobDeath
------------------------------------
-
-function onMobDeath(mob, killer, ally)
-
-    checkGoVregime(ally,mob,749,1);
-
-    local Defender = mob:getID();
-    local AuraGear = mob:getID() + 1;
-
-    GetMobByID(Defender):resetLocalVars();
-
-    if (GetMobAction(AuraGear) ~= 0) then
-        DespawnMob(AuraGear);
-    end
-
+function onMobDeath(mob, player, isKiller)
+    checkGoVregime(player,mob,749,1);
 end;
 
------------------------------------
--- OnMobDespawn
------------------------------------
 function onMobDespawn( mob )
 
     local Defender = mob:getID();

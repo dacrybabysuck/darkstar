@@ -1,23 +1,17 @@
 -----------------------------------
 -- Area: Xarcabard (S)
--- NPC:  Fusty Gnole
------------------------------------
------------------------------------
--- onMobSpawn Action
+--  NPC: Fusty Gnole
 -----------------------------------
 
 function onMobSpawn(mob)
     mob:setLocalVar("transformTime", os.time())
 end;
 
------------------------------------
--- onMobRoam Action
------------------------------------
 function onMobRoam(mob)
     local transformTime = mob:getLocalVar("transformTime");
     local roamChance = math.random(1,100);
     local roamMoonPhase = VanadielMoonPhase();
-    
+
     if (roamChance > 100-roamMoonPhase) then
         if (mob:AnimationSub() == 0 and os.time() - transformTime > 300) then
             mob:AnimationSub(1);
@@ -29,16 +23,12 @@ function onMobRoam(mob)
     end
 end;
 
------------------------------------
--- onMobEngaged
 -- Change forms every 60 seconds
------------------------------------
-
-function onMobEngaged(mob,target)    
+function onMobEngaged(mob,target)
     local changeTime = mob:getLocalVar("changeTime");
     local chance = math.random(1,100);
     local moonPhase = VanadielMoonPhase();
-    
+
     if (chance > 100-moonPhase) then
         if (mob:AnimationSub() == 0 and mob:getBattleTime() - changeTime > 45) then
             mob:AnimationSub(1);
@@ -48,4 +38,7 @@ function onMobEngaged(mob,target)
             mob:setLocalVar("changeTime", mob:getBattleTime());
         end
     end
+end;
+
+function onMobDeath(mob, player, isKiller)
 end;

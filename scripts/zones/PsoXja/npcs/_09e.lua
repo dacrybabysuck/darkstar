@@ -1,66 +1,32 @@
 -----------------------------------
--- Area:  Pso'Xja
--- NPC:   _09e (Stone Gate)
+-- Area: Pso'Xja
+--  NPC: _09e (Stone Gate)
 -- Notes: Spawns Gargoyle when triggered
--- @pos -330.000 14.074 -261.600 9
+-- !pos 310.000 -1.925 -21.599 9
 -----------------------------------
 package.loaded["scripts/zones/PsoXja/TextIDs"] = nil;
 -----------------------------------
-
+require("scripts/zones/PsoXja/globals");
 require("scripts/zones/PsoXja/TextIDs");
-require("scripts/globals/keyitems");
-
------------------------------------
--- onTrade
+require("scripts/zones/PsoXja/MobIDs");
+require("scripts/globals/status");
 -----------------------------------
 
 function onTrade(player,npc,trade)
-end;
-
------------------------------------
--- onTrigger
------------------------------------
-
-function onTrigger(player,npc) 
-
-    local Z=player:getZPos();
-    
-    if (npc:getAnimation() == 9) then    
-        if (Z >= -21) then
-            if (GetMobAction(16814095) == 0) then
-                local Rand = math.random(1,10);
-                if (Rand <=9) then -- Spawn Gargoyle
-                    player:messageSpecial(TRAP_ACTIVATED); 
-                    SpawnMob(16814095,120):updateClaim(player); -- Gargoyle
-                else
-                    player:messageSpecial(TRAP_FAILS);
-                    npc:openDoor(30);
-                end    
-            else
-                player:messageSpecial(DOOR_LOCKED);
-            end    
-        elseif (Z <= -22) then
-            player:startEvent(0x001A);
-        end
+    if ( player:getMainJob() == dsp.job.THF and trade:getItemCount() == 1 and (trade:hasItemQty(1115,1) or trade:hasItemQty(1023,1) or trade:hasItemQty(1022,1)) ) then
+        attemptPickLock(player, npc, player:getZPos() >= -21);
     end
-
 end;
 
------------------------------------
--- onEventUpdate
------------------------------------
+function onTrigger(player,npc)
+    attemptOpenDoor(player, npc, player:getZPos() >= -21);
+end;
 
 function onEventUpdate(player,csid,option)
---printf("CSID: %u",csid);
---printf("RESULT: %u",option);
 end;
 
------------------------------------
--- onEventFinish
------------------------------------
-
 function onEventFinish(player,csid,option)
-    if (csid == 0x001A and option == 1) then
+    if (csid == 26 and option == 1) then
         player:setPos(260,-0.25,-20,254,111);
     end
 end;

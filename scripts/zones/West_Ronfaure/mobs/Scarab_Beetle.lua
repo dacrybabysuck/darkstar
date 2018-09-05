@@ -3,29 +3,15 @@
 --  MOB: Scarab Beetle
 -- Note: Place holder for Fungus Beetle
 -----------------------------------
-
-require("scripts/globals/fieldsofvalor");
 require("scripts/zones/West_Ronfaure/MobIDs");
+require("scripts/globals/fieldsofvalor");
+require("scripts/globals/mobs");
 
------------------------------------
--- onMobDeath
------------------------------------
+function onMobDeath(mob, player, isKiller)
+    checkRegime(player,mob,3,1);
+    checkRegime(player,mob,4,2);
+end;
 
-function onMobDeath(mob,killer,ally)
-    checkRegime(ally,mob,3,1);
-    checkRegime(ally,mob,4,2);
-
-    mob = mob:getID();
-    if (Fungus_Beetle_PH[mob] ~= nil) then
-        printf("Action:%u:%u",Fungus_Beetle,GetMobAction(Fungus_Beetle));
-        ToD = GetServerVariable("[POP]Fungus_Beetle");
-        if (ToD <= os.time(t) and GetMobAction(Fungus_Beetle) == 0) then
-            if (math.random((1),(10)) == 5) then
-                UpdateNMSpawnPoint(Fungus_Beetle);
-                GetMobByID(Fungus_Beetle):setRespawnTime(GetMobRespawnTime(mob));
-                SetServerVariable("[PH]Fungus_Beetle", mob);
-                DeterMob(mob, true);
-            end
-        end
-    end
+function onMobDespawn(mob)
+    phOnDespawn(mob,FUNGUS_BEETLE_PH,10,math.random(900,10800)); -- 15 minutes to 3 hours
 end;

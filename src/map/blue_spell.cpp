@@ -23,13 +23,13 @@
 
 #include "blue_spell.h"
 
-CBlueSpell::CBlueSpell(uint16 id) : CSpell(id)
+CBlueSpell::CBlueSpell(SpellID id) : CSpell(id)
 {
-	m_monsterSkillId = 0;
-    m_setPoints      = 0;
-    m_ecosystem      = 0;
-    m_traitCategory  = 0;
-    m_traitWeight    = 0;
+}
+
+std::unique_ptr<CSpell> CBlueSpell::clone()
+{
+  return std::unique_ptr<CBlueSpell>(new CBlueSpell(*this));
 }
 
 uint16 CBlueSpell::getMonsterSkillId()
@@ -102,7 +102,7 @@ void CBlueSpell::setSecondarySkillchain(uint8 sc)
     m_SecondarySkillchain = sc;
 }
 
-void CBlueSpell::addModifier(CModifier* modifier)
+void CBlueSpell::addModifier(CModifier modifier)
 {
     modList.push_back(modifier);
 }

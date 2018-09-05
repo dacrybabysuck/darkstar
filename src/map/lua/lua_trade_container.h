@@ -27,15 +27,13 @@
 #include "../../common/cbasetypes.h"
 #include "../../common/lua/lunar.h"
 
-#include "../trade_container.h"
-
-
+class CTradeContainer;
 class CLuaTradeContainer
 {
     CTradeContainer *m_pMyTradeContainer;
 public:
 
-    static const int8 className[];
+    static const char className[];
     static Lunar<CLuaTradeContainer>::Register_t methods[];
 
     CLuaTradeContainer(lua_State*);
@@ -48,6 +46,7 @@ public:
 
     int32 getGil(lua_State*);
     int32 getItem(lua_State*);
+    int32 getItemId(lua_State*);
     int32 getItemSubId(lua_State*);
     int32 getItemQty(lua_State*);
     int32 hasItemQty(lua_State*);
@@ -55,6 +54,7 @@ public:
     int32 getItemCount(lua_State*);		// общее количество предметов
     int32 getSlotCount(lua_State*);
     int32 confirmItem(lua_State*);
+    int32 confirmSlot(lua_State*);
 };
 
 #endif

@@ -4,49 +4,35 @@
 -----------------------------------
 package.loaded["scripts/zones/RuAun_Gardens/TextIDs"] = nil;
 -----------------------------------
+mixins = {require("scripts/mixins/job_special")};
 require("scripts/zones/RuAun_Gardens/TextIDs");
+require("scripts/zones/RuAun_Gardens/MobIDs");
+require("scripts/globals/settings");
 require("scripts/globals/status");
-
------------------------------------
--- onMobInitialize
------------------------------------
+require("scripts/globals/msg");
 
 function onMobInitialize(mob)
-    mob:setMobMod(MOBMOD_ADD_EFFECT,mob:getShortID());
+    mob:setMobMod(dsp.mobMod.ADD_EFFECT,mob:getShortID());
 end;
-
------------------------------------
--- onMobSpawn Action
------------------------------------
 
 function onMobSpawn(mob)
 end;
 
------------------------------------
--- onMonsterMagicPrepare
------------------------------------
-
 function onMonsterMagicPrepare(mob,target)
-    -- For some reason, this returns false even when Hundred Fists is active, so... yeah.
-    -- Core does this:
-    -- m_PMob->StatusEffectContainer->AddStatusEffect(new CStatusEffect(EFFECT_HUNDRED_FISTS,0,1,0,45));
-    if (mob:hasStatusEffect(EFFECT_HUNDRED_FISTS,0) == false) then
+    if (not mob:hasStatusEffect(dsp.effect.HUNDRED_FISTS,0)) then
         local rnd = math.random();
         if (rnd < 0.5) then
             return 186; -- aeroga 3
         elseif (rnd < 0.7) then
-             return 157; -- aero 4
+            return 157; -- aero 4
         elseif (rnd < 0.9) then
             return 208; -- tornado
         else
             return 237; -- choke
         end
     end
+    return 0; -- Still need a return, so use 0 when not casting
 end;
-
------------------------------------
--- onAdditionalEffect
------------------------------------
 
 function onAdditionalEffect(mob, target, damage)
     local dmg = math.random(130,150)
@@ -54,26 +40,18 @@ function onAdditionalEffect(mob, target, damage)
     params.bonusmab = 0;
     params.includemab = false;
 
-    dmg = addBonusesAbility(mob, ELE_WIND, target, dmg, params);
-    dmg = dmg * applyResistanceAddEffect(mob,target,ELE_WIND,0);
-    dmg = adjustForTarget(target,dmg,ELE_WIND);
-    dmg = finalMagicNonSpellAdjustments(mob,target,ELE_WIND,dmg);
+    dmg = addBonusesAbility(mob, dsp.magic.ele.WIND, target, dmg, params);
+    dmg = dmg * applyResistanceAddEffect(mob,target,dsp.magic.ele.WIND,0);
+    dmg = adjustForTarget(target,dmg,dsp.magic.ele.WIND);
+    dmg = finalMagicNonSpellAdjustments(mob,target,dsp.magic.ele.WIND,dmg);
 
-    return SUBEFFECT_WIND_DAMAGE, MSGBASIC_ADD_EFFECT_DMG, dmg;
+    return dsp.subEffect.WIND_DAMAGE, dsp.msg.basic.ADD_EFFECT_DMG, dmg;
 end;
 
------------------------------------
--- onMobDeath
------------------------------------
-
-function onMobDeath(mob, killer, ally)
-    ally:showText(mob,SKY_GOD_OFFSET + 10);
+function onMobDeath(mob, player, isKiller)
+    player:showText(mob,SKY_GOD_OFFSET + 10);
 end;
-
------------------------------------
--- onMobDespawn
------------------------------------
 
 function onMobDespawn(mob)
-    GetNPCByID(17310053):updateNPCHideTime(FORCE_SPAWN_QM_RESET_TIME);
+    GetNPCByID(SEIRYU_QM):updateNPCHideTime(FORCE_SPAWN_QM_RESET_TIME);
 end;

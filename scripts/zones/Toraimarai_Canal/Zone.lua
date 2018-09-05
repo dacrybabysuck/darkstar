@@ -5,26 +5,13 @@
 -----------------------------------
 package.loaded["scripts/zones/Toraimarai_Canal/TextIDs"] = nil;
 -----------------------------------
-
-require("scripts/globals/settings")
-require("scripts/globals/zone");
 require("scripts/zones/Toraimarai_Canal/TextIDs");
-
------------------------------------
--- onInitialize
------------------------------------
+require("scripts/zones/Toraimarai_Canal/MobIDs");
+require("scripts/globals/conquest")
 
 function onInitialize(zone)
-    local tomes = {17469846,17469847,17469848,17469849};
-
-    SetGroundsTome(tomes);
-
-    UpdateTreasureSpawnPoint(17469831);
+    UpdateTreasureSpawnPoint(TORAIMARAI_TREASURE_COFFER);
 end;
-
------------------------------------
--- onZoneIn
------------------------------------
 
 function onZoneIn(player,prevZone)
     local cs = -1;
@@ -34,39 +21,15 @@ function onZoneIn(player,prevZone)
     return cs;
 end;
 
------------------------------------
--- onConquestUpdate
------------------------------------
-
 function onConquestUpdate(zone, updatetype)
-    local players = zone:getPlayers();
-
-    for name, player in pairs(players) do
-        conquestUpdate(zone, player, updatetype, CONQUEST_BASE);
-    end
+    dsp.conq.onConquestUpdate(zone, updatetype)
 end;
-
------------------------------------
--- onRegionEnter
------------------------------------
 
 function onRegionEnter(player,region)
 end;
 
------------------------------------
--- onEventUpdate
------------------------------------
-
 function onEventUpdate(player,csid,option)
-    -- printf("CSID: %u",csid);
-    -- printf("RESULT: %u",option);
 end;
 
------------------------------------
--- onEventFinish
------------------------------------
-
 function onEventFinish(player,csid,option)
-    -- printf("CSID: %u",csid);
-    -- printf("RESULT: %u",option);
 end;

@@ -27,15 +27,13 @@
 #include "../../common/cbasetypes.h"
 #include "../../common/lua/lunar.h"
 
-#include "../zone.h"
-
-
+class CZone;
 class CLuaZone
 {
     CZone* m_pLuaZone;
 public:
 
-    static const int8 className[];
+    static const char className[];
     static Lunar<CLuaZone>::Register_t methods[];
 
     CLuaZone(lua_State*);
@@ -46,8 +44,9 @@ public:
         return m_pLuaZone;
     }
 
-    int32 levelRestriction(lua_State*);
+    int32 canUseMisc(lua_State*);
     int32 registerRegion(lua_State*);
+    int32 levelRestriction(lua_State*);
     int32 getPlayers(lua_State*);
     int32 getID(lua_State*);
     int32 getRegionID(lua_State*);

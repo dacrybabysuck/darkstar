@@ -230,7 +230,7 @@ enum ZONEID : uint16
     ZONE_DYNAMIS_BASTOK               = 186,
     ZONE_DYNAMIS_WINDURST             = 187,
     ZONE_DYNAMIS_JEUNO                = 188,
-    ZONE_189                          = 189,
+    ZONE_189                          = 189, // Southern San d'Oria [S] Residential Area
     ZONE_KING_RANPERRES_TOMB          = 190,
     ZONE_DANGRUF_WADI                 = 191,
     ZONE_INNER_HORUTOTO_RUINS         = 192,
@@ -240,7 +240,7 @@ enum ZONEID : uint16
     ZONE_GUSGEN_MINES                 = 196,
     ZONE_CRAWLERS_NEST                = 197,
     ZONE_MAZE_OF_SHAKHRAMI            = 198,
-    ZONE_199                          = 199,
+    ZONE_199                          = 199, // Bastok Markets [S] Residential Area
     ZONE_GARLAIGE_CITADEL             = 200,
     ZONE_CLOISTER_OF_GALES            = 201,
     ZONE_CLOISTER_OF_STORMS           = 202,
@@ -255,12 +255,12 @@ enum ZONEID : uint16
     ZONE_CLOISTER_OF_TIDES            = 211,
     ZONE_GUSTAV_TUNNEL                = 212,
     ZONE_LABYRINTH_OF_ONZOZO          = 213,
-    ZONE_214                          = 214, // Alt. ID of Residential Zone?
+    ZONE_214                          = 214, // Aht Urhgan Residential Area
     ZONE_ABYSSEA_ATTOHWA              = 215,
     ZONE_ABYSSEA_MISAREAUX            = 216,
     ZONE_ABYSSEA_VUNKERL              = 217,
     ZONE_ABYSSEA_ALTEPA               = 218,
-    ZONE_218                          = 218,
+    ZONE_219                          = 219, // Windurst Waters [S] Residential Area
     ZONE_SHIP_BOUND_FOR_SELBINA       = 220,
     ZONE_SHIP_BOUND_FOR_MHAURA        = 221,
     ZONE_PROVENANCE                   = 222,
@@ -333,11 +333,15 @@ enum ZONEID : uint16
     ZONE_ESCHA_RUAUN                  = 289,
     ZONE_DESUETIA_EMPYREAL_PARADOX    = 290,
     ZONE_REISENJIMA                   = 291,
-    ZONE_292                          = 292,
-    ZONE_REISENJIMA_SANCTORIUM        = 293
+    ZONE_REISENJIMA_HENGE             = 292,
+    ZONE_REISENJIMA_SANCTORIUM        = 293,
+    ZONE_DYNAMIS_SAN_DORIA_D          = 294,
+    ZONE_DYNAMIS_BASTOK_D             = 295,
+    ZONE_DYNAMIS_WINDURST_D           = 296,
+    ZONE_DYNAMIS_JEUNO_D              = 297
 };
 
-#define MAX_ZONEID 294
+#define MAX_ZONEID 298
 
 enum REGIONTYPE : uint8
 {
@@ -423,7 +427,7 @@ enum ZONEMISC
     MISC_NONE       = 0x0000,   // Able to be used in any area
     MISC_ESCAPE     = 0x0001,   // Ability to use Escape Spell
     MISC_FELLOW     = 0x0002,   // Ability to summon Fellow NPC
-    MISC_CHOCOBO    = 0x0004,   // Ability to use Chocobos
+    MISC_MOUNT      = 0x0004,   // Ability to use Chocobos and mounts
     MISC_MAZURKA    = 0x0008,   // Ability to use Mazurka Spell
     MISC_TRACTOR    = 0x0010,   // Ability to use Tractor Spell
     MISC_MOGMENU    = 0x0020,   // Ability to communicate with Nomad Moogle (menu access mog house)
@@ -496,9 +500,9 @@ class CZoneEntities;
 typedef std::list<CRegion*> regionList_t;
 typedef std::list<zoneLine_t*> zoneLineList_t;
 
-typedef std::map<uint16,zoneWeather_t> weatherVector_t;
+typedef std::map<uint16, zoneWeather_t> weatherVector_t;
 
-typedef std::map<uint16,CBaseEntity*> EntityList_t;
+typedef std::map<uint16, CBaseEntity*> EntityList_t;
 
 int32 zone_update_weather(uint32 tick, CTaskMgr::CTask *PTask);
 
@@ -519,11 +523,12 @@ public:
     uint8           GetSoloBattleMusic();
     uint8           GetPartyBattleMusic();
     uint8           GetBackgroundMusicDay();
-    uint8 GetBackgroundMusicNight();
+    uint8           GetBackgroundMusicNight();
     zoneLine_t*     GetZoneLine(uint32 zoneLineID);
 
     virtual CCharEntity*    GetCharByName(int8* name);                              // finds the player if exists in zone
     virtual CCharEntity*    GetCharByID(uint32 id);
+    // Gets an entity - ignores instances (use CBaseEntity->GetEntity if possible)
     virtual CBaseEntity*    GetEntity(uint16 targid, uint8 filter = -1);            // получаем указатель на любую сущность в зоне
 
     bool            IsWeatherStatic();                                              // погода в зоне не требует изменения (никогда не меняется)
@@ -557,11 +562,10 @@ public:
     virtual void    TOTDChange(TIMETYPE TOTD);                                      // обработка реакции мира на смену времени суток
     virtual void    PushPacket(CBaseEntity*, GLOBAL_MESSAGE_TYPE, CBasicPacket*);   // отправляем глобальный пакет в пределах зоны
 
-    uint32          m_RegionCheckTime;                                              // время последней проверки регионов
+    time_point      m_RegionCheckTime;                                              // время последней проверки регионов
     weatherVector_t m_WeatherVector;                                                // вероятность появления каждого типа погоды
 
-    virtual void    ZoneServer(uint32 tick);
-    virtual void    ZoneServerRegion(uint32 tick);
+    virtual void    ZoneServer(time_point tick, bool check_regions);
     void            CheckRegions(CCharEntity* PChar);
 
     virtual void    ForEachChar(std::function<void(CCharEntity*)> func);
@@ -605,12 +609,12 @@ private:
     void    LoadZoneSettings();             // настройки зоны
     void    LoadNavMesh();                  // Load the zones navmesh. Must exist in scripts/zones/:zone/NavMesh.nav
 
-    CTaskMgr::CTask* ZoneTimer;             // указатель на созданный таймер - ZoneServer. необходим для возможности его остановки
 
     CTreasurePool*  m_TreasurePool;         // глобальный TreasuerPool
 
 protected:
 
+    CTaskMgr::CTask* ZoneTimer;             // указатель на созданный таймер - ZoneServer. необходим для возможности его остановки
     void createZoneTimer();
     void CharZoneIn(CCharEntity* PChar);
     void CharZoneOut(CCharEntity* PChar);

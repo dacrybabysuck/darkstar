@@ -1,33 +1,9 @@
 -----------------------------------
 -- Area: Dynamis Bastok
---  MOB: Vanguard Vindicator
+--  MOB: Vanguard_Vindicator
+-----------------------------------
+mixins = {require("scripts/mixins/job_special")}
 -----------------------------------
 
-require("scripts/globals/dynamis");
-
------------------------------------
--- onMobSpawn Action
------------------------------------
-
-function onMobSpawn(mob)
-end;
-
------------------------------------
--- onMobEngaged
------------------------------------
-
-function onMobEngaged(mob,target)
-end;
-
------------------------------------
--- onMobDeath
------------------------------------
-
-function onMobDeath(mob,killer,ally)
-
-    if (mob:getID() == 17539300 and alreadyReceived(killer,7) == false) then
-        ally:addTimeToDynamis(10);
-        addDynamisList(killer,64);
-    end
-
-end;
+function onMobDeath(mob, player, isKiller)
+end

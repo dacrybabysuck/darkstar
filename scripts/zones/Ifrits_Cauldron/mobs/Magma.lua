@@ -2,25 +2,18 @@
 -- Area: Ifrit's Cauldron
 --  MOB: Magma
 -----------------------------------
-
+require("scripts/zones/Ifrits_Cauldron/MobIDs");
+require("scripts/globals/settings");
+require("scripts/globals/status");
 -----------------------------------
--- onMobSpawn Action
------------------------------------
 
-function onMobSpawn(mob)
+function onMobInitialize(mob)
+    mob:setMobMod(dsp.mobMod.IDLE_DESPAWN, 180);
 end;
 
------------------------------------
--- onMobDeath
------------------------------------
-
-function onMobDeath(mob, killer, ally)
+function onMobDeath(mob, player, isKiller)
 end;
-
------------------------------------
--- onMobDespawn
------------------------------------
 
 function onMobDespawn(mob)
-    GetNPCByID(17617214):updateNPCHideTime(FORCE_SPAWN_QM_RESET_TIME);
+    GetNPCByID(PIRATES_COVE_QM):updateNPCHideTime(FORCE_SPAWN_QM_RESET_TIME);
 end;

@@ -26,6 +26,7 @@ This file is part of DarkStar-server source code.
 #include "synth_message.h"
 #include "synth_result.h"
 #include "../entities/charentity.h"
+#include "../trade_container.h"
 
 
 CSynthResultMessagePacket::CSynthResultMessagePacket(CCharEntity* PChar, SYNTH_MESSAGE messageID, uint16 itemID, uint8 quantity)
@@ -33,13 +34,13 @@ CSynthResultMessagePacket::CSynthResultMessagePacket(CCharEntity* PChar, SYNTH_M
 	this->type = 0x70;
 	this->size = 0x30;
 
-	WBUFB(data, (0x04) ) = messageID;
+	ref<uint8>(0x04) = messageID;
 	
-	WBUFW(data, (0x1a) ) = PChar->id;
+	ref<uint16>(0x1a) = PChar->id;
 	if (itemID != 0)
 	{
-		WBUFB(data, (0x06) ) = quantity;
-		WBUFW(data, (0x08) ) = itemID;
+		ref<uint8>(0x06) = quantity;
+		ref<uint16>(0x08) = itemID;
 	}
 	if (messageID == SYNTH_FAIL)
 	{
@@ -50,7 +51,7 @@ CSynthResultMessagePacket::CSynthResultMessagePacket(CCharEntity* PChar, SYNTH_M
 			if (quantity == 0)
 			{
 				uint16 itemID = PChar->CraftContainer->getItemID(slotID);
-				WBUFW(data, (0x0A + (count * 2)) ) = itemID;
+				ref<uint16>(0x0A + (count * 2)) = itemID;
 				count++;
 			}
 		}

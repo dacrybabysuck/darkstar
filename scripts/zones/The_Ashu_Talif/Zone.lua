@@ -1,54 +1,34 @@
 -----------------------------------
--- 
+--
 -- Zone: The_Ashu_Talif
--- 
+--
 -----------------------------------
-
 require("scripts/globals/settings");
-package.loaded["scripts/zones/The_Ashu_Talif/TextIDs"] = nil;
-require("scripts/zones/The_Ashu_Talif/TextIDs");
-
------------------------------------
---  onInitialize
+local TheAshuTalif = require("scripts/zones/The_Ashu_Talif/IDs");
 -----------------------------------
 
 function onInitialize(zone)
 end;
 
------------------------------------
--- onZoneIn
------------------------------------
-
 function onZoneIn(player,prevZone)
-cs = -1;
-
-return cs;
+    local cs = -1;
+    return cs;
 end;
-
------------------------------------
--- onRegionEnter          
------------------------------------
 
 function onRegionEnter(player,region)
 end;
 
------------------------------------
--- onEventUpdate
------------------------------------
-
-function onEventUpdate(player,csid,option)
---printf("CSID: %u",csid);
---printf("RESULT: %u",option);
+function onEventUpdate(player,csid,option,target)
+    -- printf("Zone Update CSID: %u",csid);
+    -- printf("Zone Update RESULT: %u",option);
 end;
-
------------------------------------
--- onEventFinish
------------------------------------
 
 function onEventFinish(player,csid,option)
---printf("CSID: %u",csid);
---printf("RESULT: %u",option);
+    -- printf("Zone Finish CSID: %u",csid);
+    -- printf("Zone Finish RESULT: %u",option);
+
+    if(csid == 101 or csid == 102) then
+        player:setPos(0,0,0,0,54);
+    end
 end;
-
-
 

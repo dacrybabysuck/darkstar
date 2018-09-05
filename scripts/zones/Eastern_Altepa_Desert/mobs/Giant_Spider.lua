@@ -1,31 +1,16 @@
 -----------------------------------
 -- Area: Eastern Altepa Desert
 --  MOB: Giant Spider
+-- Note: PH for Dune Widow
 -----------------------------------
-
-require("scripts/globals/fieldsofvalor");
 require("scripts/zones/Eastern_Altepa_Desert/MobIDs");
+require("scripts/globals/fieldsofvalor");
+require("scripts/globals/mobs");
 
------------------------------------
--- onMobDeath
------------------------------------
+function onMobDeath(mob, player, isKiller)
+    checkRegime(player,mob,109,1);
+end;
 
-function onMobDeath(mob,killer,ally)
-
-    checkRegime(ally,mob,109,1);
-
-    mob = mob:getID();
-    if (Dune_Widow_PH[mob] ~= nil) then
-
-        ToD = GetServerVariable("[POP]Dune_Widow");
-        if (ToD <= os.time(t) and GetMobAction(Dune_Widow) == 0) then
-            if (math.random((1),(20)) == 5) then
-                UpdateNMSpawnPoint(Dune_Widow);
-                GetMobByID(Dune_Widow):setRespawnTime(GetMobRespawnTime(mob));
-                SetServerVariable("[PH]Dune_Widow", mob);
-                DeterMob(mob, true);
-            end
-        end
-    end
-
+function onMobDespawn(mob)
+    phOnDespawn(mob,DUNE_WIDOW_PH,5,math.random(3600,18000)); -- 1 to 5 hours
 end;

@@ -1,28 +1,19 @@
 -----------------------------------
 -- Area: Dynamis San d'Oria
--- NPC:  Wyrmgnasher Bjakdek
+--  NPC: Wyrmgnasher Bjakdek
 -- Boss Trigger for Overlord's Tombstone
 -----------------------------------
 
------------------------------------
--- onMobSpawn Action
------------------------------------
+mixins = {require("scripts/mixins/job_special")};
+require("scripts/globals/status");
 
 function onMobSpawn(mob)
 end;
 
------------------------------------
--- onMobEngaged
------------------------------------
-
-function onMobEngaged(mob,target)
+function onMobDeath(mob, player, isKiller)
 end;
 
------------------------------------
--- onMobDeath
------------------------------------
-
-function onMobDeath(mob,killer,ally)
+function onMobDespawn(mob)
 
     local bossTrigger = GetServerVariable("[DynaSandoria]Boss_Trigger");
 

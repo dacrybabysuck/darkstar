@@ -3,28 +3,14 @@
 --  MOB: Deinonychus
 -- Note: Place Holder for Yowie
 -----------------------------------
-
 require("scripts/zones/Kuftal_Tunnel/MobIDs");
+require("scripts/globals/groundsofvalor");
+require("scripts/globals/mobs");
 
------------------------------------
--- onMobDeath
------------------------------------
+function onMobDeath(mob, player, isKiller)
+    checkGoVregime(player,mob,740,1);
+end;
 
-function onMobDeath(mob,killer,ally)
-
-    checkGoVregime(ally,mob,740,1);
-
-    local mob = mob:getID();
-    if (Yowie_PH[mob] ~= nil) then
-
-        local ToD = GetServerVariable("[POP]Yowie");
-        if (ToD <= os.time(t) and GetMobAction(Yowie) == 0) then
-            if (math.random((1),(20)) == 5) then
-                UpdateNMSpawnPoint(Yowie);
-                GetMobByID(Yowie):setRespawnTime(GetMobRespawnTime(mob));
-                SetServerVariable("[PH]Yowie", mob);
-                DeterMob(mob, true);
-            end
-        end
-    end
+function onMobDespawn(mob)
+    phOnDespawn(mob,YOWIE_PH,5,math.random(7200,28800)); -- 2 to 8 hours
 end;

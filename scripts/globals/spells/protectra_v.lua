@@ -1,34 +1,33 @@
 -----------------------------------------
 -- Spell: Protectra V
 -----------------------------------------
-
-require("scripts/globals/status");
-require("scripts/globals/magic");
-
------------------------------------------
--- OnSpellCast
+require("scripts/globals/status")
+require("scripts/globals/magic")
+require("scripts/globals/msg")
 -----------------------------------------
 
 function onMagicCastingCheck(caster,target,spell)
-    return 0;
-end;
+    return 0
+end
 
 function onSpellCast(caster,target,spell)
-    local meritBonus = caster:getMerit(MERIT_PROTECTRA_V);
-    local duration = 1800;
-    --Base Power is actually 175, but you have to have at least 1 merit and they're each +5
-    
-    local power = 170 + meritBonus;
-    --printf("Protectra V Power: %d", power);
-    
-    duration = calculateDurationForLvl(duration, 75, target:getMainLvl());
+    local meritBonus = caster:getMerit(dsp.merit.PROTECTRA_V)
+    local duration = 1800
 
-    local typeEffect = EFFECT_PROTECT;
+    local power = 175 + meritBonus
+    if (meritBonus > 0) then -- certain mobs can cast this spell, so don't apply the -5 for having 0 merits.
+        power = power + meritBonus - 5
+    end
+    --printf("Protectra V Power: %d", power)
+
+    duration = calculateDurationForLvl(duration, 75, target:getMainLvl())
+
+    local typeEffect = dsp.effect.PROTECT
     if (target:addStatusEffect(typeEffect, power, 0, duration)) then
-        spell:setMsg(230);
+        spell:setMsg(dsp.msg.basic.MAGIC_GAIN_EFFECT)
     else
-        spell:setMsg(75); -- no effect
+        spell:setMsg(dsp.msg.basic.MAGIC_NO_EFFECT) -- no effect
     end
 
-    return typeEffect;
-end;
+    return typeEffect
+end

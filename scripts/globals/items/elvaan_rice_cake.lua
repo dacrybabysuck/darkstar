@@ -1,23 +1,15 @@
 -----------------------------------------
---    ID: 5295
---    Elvaan Rice Cake
---    Enchantment: 60Min, Costume - Elvaan Child (female)
+-- ID: 5295
+-- Elvaan Rice Cake
+-- Enchantment: 60Min, Costume - Elvaan Child (female)
 -----------------------------------------
-
-require("scripts/globals/status");
-
------------------------------------------
--- OnItemCheck
+require("scripts/globals/status")
 -----------------------------------------
 
 function onItemCheck(target)
-    return target:canUseCostume();
-end;
-
------------------------------------------
--- OnItemUse
------------------------------------------
+    return target:canUseCostume()
+end
 
 function onItemUse(target)
-    target:addStatusEffect(EFFECT_COSTUME,158,0,3600);
-end;
+    target:addStatusEffect(dsp.effect.COSTUME,158,0,3600)
+end

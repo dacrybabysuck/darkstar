@@ -7,36 +7,25 @@ package.loaded["scripts/zones/Dynamis-Beaucedine/TextIDs"] = nil;
 -----------------------------------
 require("scripts/zones/Dynamis-Beaucedine/TextIDs");
 require("scripts/globals/dynamis");
-
------------------------------------
--- onMobSpawn Action
 -----------------------------------
 
 function onMobSpawn(mob)
-    mob:setMobMod(MOBMOD_SUPERLINK, mob:getShortID());
+    mob:setMobMod(dsp.mobMod.SUPERLINK, mob:getShortID());
 end;
-
------------------------------------
--- onMobEngaged
------------------------------------
 
 function onMobEngaged(mob,target)
     dynamis.spawnGroup(mob, beaucedineHydraList, 5);
 end;
 
------------------------------------
--- onMobDeath
------------------------------------
-
-function onMobDeath(mob,killer,ally)
+function onMobDeath(mob, player, isKiller)
     local mobID = mob:getID();
 
     -- Time Bonus: 120 147
     if (mobID == 17326553 and mob:isInBattlefieldList() == false) then
-        ally:addTimeToDynamis(15);
+        player:addTimeToDynamis(15);
         mob:addInBattlefieldList();
     elseif (mobID == 17326706 and mob:isInBattlefieldList() == false) then
-        ally:addTimeToDynamis(15);
+        player:addTimeToDynamis(15);
         mob:addInBattlefieldList();
     -- 117 spawn 148 when defeated
     elseif (mobID == 17326721) then

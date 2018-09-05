@@ -1,45 +1,20 @@
 -----------------------------------
---  Area: Windurst Woods
---   NPC: Zahsa Syalmhaia
---  Type: Great War Veteran NPC
--- @zone: 241
---  @pos 13.710 1.422 -83.198
---
--- Auto-Script: Requires Verification (Verfied by Brawndo)
------------------------------------
-package.loaded["scripts/zones/Windurst_Woods/TextIDs"] = nil;
------------------------------------
-
------------------------------------
--- onTrade Action
+-- Area: Windurst Woods
+--  NPC: Zahsa Syalmhaia
+-- Type: Great War Veteran NPC
+-- !pos 13.710 1.422 -83.198 241
 -----------------------------------
 
 function onTrade(player,npc,trade)
 end;
 
------------------------------------
--- onTrigger Action
------------------------------------
-
 function onTrigger(player,npc)
-    player:startEvent(0x031d);
+    player:startEvent(797);
 end;
-
------------------------------------
--- onEventUpdate
------------------------------------
 
 function onEventUpdate(player,csid,option)
-    -- printf("CSID: %u",csid);
-    -- printf("RESULT: %u",option);
 end;
 
------------------------------------
--- onEventFinish
------------------------------------
-
 function onEventFinish(player,csid,option)
-    -- printf("CSID: %u",csid);
-    -- printf("RESULT: %u",option);
 end;
 

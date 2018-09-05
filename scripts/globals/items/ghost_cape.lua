@@ -1,23 +1,15 @@
 -----------------------------------------
---    ID: 16257
---    Ghost Cape
---    Enchantment: 60Min, Costume - Ghost
+-- ID: 16257
+-- Ghost Cape
+-- Enchantment: 60Min, Costume - Ghost
 -----------------------------------------
-
-require("scripts/globals/status");
-
------------------------------------------
--- OnItemCheck
+require("scripts/globals/status")
 -----------------------------------------
 
 function onItemCheck(target)
-    return target:canUseCostume();
-end;
-
------------------------------------------
--- OnItemUse
------------------------------------------
+    return target:canUseCostume()
+end
 
 function onItemUse(target)
-    target:addStatusEffect(EFFECT_COSTUME,368,0,3600);
-end;
+    target:addStatusEffect(dsp.effect.COSTUME,368,0,3600)
+end

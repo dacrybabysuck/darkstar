@@ -3,30 +3,16 @@
 --
 --
 -----------------------------------
-
-require("scripts/globals/status");
-
------------------------------------
--- onEffectGain Action
+require("scripts/globals/status")
 -----------------------------------
 
 function onEffectGain(target,effect)
-    target:addMod(MOD_KICK_DMG,21);
-    target:addMod(MOD_ATTP,10);
-end;
-
------------------------------------
--- onEffectTick Action
------------------------------------
+    target:addMod(dsp.mod.KICK_ATTACK,20)
+end
 
 function onEffectTick(target,effect)
-end;
-
------------------------------------
--- onEffectLose Action
------------------------------------
+end
 
 function onEffectLose(target,effect)
-    target:delMod(MOD_KICK_DMG,21);
-    target:delMod(MOD_ATTP,10);
-end;
+    target:delMod(dsp.mod.KICK_ATTACK,20)
+end

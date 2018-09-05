@@ -66,6 +66,11 @@ void CWeaponSkill::setMainOnly(uint8 main)
     m_mainOnly = main;
 }
 
+void CWeaponSkill::setUnlockId(uint8 id)
+{
+    m_unlockId = id;
+}
+
 void CWeaponSkill::setJob(int8* jobs)
 {
 	memcpy(&m_Job[1], jobs, 22);
@@ -78,7 +83,7 @@ void CWeaponSkill::setSkillLevel(uint16 level)
 
 const int8* CWeaponSkill::getName()
 {
-	return m_name.c_str();
+	return (const int8*)m_name.c_str();
 }
 
 void CWeaponSkill::setElement(uint8 element)
@@ -104,12 +109,17 @@ void CWeaponSkill::setTertiarySkillchain(uint8 skillchain)
 void CWeaponSkill::setName(int8* name)
 {
 	m_name.clear();
-	m_name.insert(0,name);
+	m_name.insert(0, (const char*)name);
 }
 
 void CWeaponSkill::setAnimationId(int8 id)
 {
 	m_AnimationId = id;
+}
+
+void CWeaponSkill::setAnimationTime(duration time)
+{
+    m_AnimationTime = time;
 }
 
 void CWeaponSkill::setAoe(uint8 aoe)
@@ -130,6 +140,11 @@ uint16 CWeaponSkill::getID()
 uint8 CWeaponSkill::getType()
 {
 	return m_TypeID;
+}
+
+uint8 CWeaponSkill::getUnlockId()
+{
+    return m_unlockId;
 }
 
 uint8 CWeaponSkill::getJob(JOBTYPE job)
@@ -155,6 +170,11 @@ bool CWeaponSkill::isElemental()
 uint8 CWeaponSkill::getAnimationId()
 {
 	return m_AnimationId;
+}
+
+duration CWeaponSkill::getAnimationTime()
+{
+    return m_AnimationTime;
 }
 
 uint8 CWeaponSkill::getAoe()

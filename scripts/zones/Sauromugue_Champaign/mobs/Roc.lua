@@ -2,23 +2,17 @@
 -- Area: Sauromugue Champaign (120)
 --  HNM: Roc
 -----------------------------------
-
 require("scripts/globals/titles");
-
------------------------------------
--- onMobFight Action
 -----------------------------------
 
 function onMobFight(mob,target)
 end;
 
------------------------------------
--- onMobDeath
------------------------------------
+function onMobDeath(mob, player, isKiller)
+    player:addTitle(dsp.title.ROC_STAR);
+end;
 
-function onMobDeath(mob,killer,ally)
-
-    ally:addTitle(ROC_STAR);
+function onMobDespawn(mob)
 
     -- Set Roc's spawnpoint and respawn time (21-24 hours)
     UpdateNMSpawnPoint(mob:getID());

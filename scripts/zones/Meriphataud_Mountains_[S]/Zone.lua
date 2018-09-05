@@ -5,20 +5,13 @@
 -----------------------------------
 package.loaded["scripts/zones/Meriphataud_Mountains_[S]/TextIDs"] = nil;
 -----------------------------------
-
-require("scripts/globals/settings");
 require("scripts/zones/Meriphataud_Mountains_[S]/TextIDs");
-
------------------------------------
--- onInitialize
+require("scripts/zones/Meriphataud_Mountains_[S]/MobIDs");
+require("scripts/globals/status");
 -----------------------------------
 
 function onInitialize(zone)
 end;
-
------------------------------------
--- onZoneIn
------------------------------------
 
 function onZoneIn(player,prevZone)
     local cs = -1;
@@ -28,27 +21,24 @@ function onZoneIn(player,prevZone)
     return cs;
 end;
 
------------------------------------
--- onRegionEnter
------------------------------------
-
 function onRegionEnter(player,region)
 end;
 
------------------------------------
--- onEventUpdate
------------------------------------
-
-function onEventUpdate(player,csid,option)
-    -- printf("CSID: %u",csid);
-    -- printf("RESULT: %u",option);
+function onGameHour(zone)
+    local GameHour = 150; -- Seconds per VanadielHour
+    local npc = GetNPCByID(MERIPH_S_MARKINGS); -- Indescript Markings
+    if (npc ~= nil) then
+        if (VanadielHour() == 17) then
+            npc:setStatus(dsp.status.DISAPPEAR);
+        end
+        if (VanadielHour() == 7) then
+            npc:setStatus(dsp.status.NORMAL);
+        end
+    end
 end;
 
------------------------------------
--- onEventFinish
------------------------------------
+function onEventUpdate(player,csid,option)
+end;
 
 function onEventFinish(player,csid,option)
-    -- printf("CSID: %u",csid);
-    -- printf("RESULT: %u",option);
 end;

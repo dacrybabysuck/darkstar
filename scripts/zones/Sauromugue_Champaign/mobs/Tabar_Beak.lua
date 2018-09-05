@@ -2,30 +2,14 @@
 -- Area: Sauromugue Champaign
 --  MOB: Tabar Beak
 -----------------------------------
-
-require("scripts/globals/fieldsofvalor");
 require("scripts/zones/Sauromugue_Champaign/MobIDs");
+require("scripts/globals/fieldsofvalor");
+require("scripts/globals/mobs");
 
------------------------------------
--- onMobDeath
------------------------------------
+function onMobDeath(mob, player, isKiller)
+    checkRegime(player,mob,100,1);
+end;
 
-function onMobDeath(mob,killer,ally)
-
-    checkRegime(ally,mob,100,1);
-
-    mob = mob:getID();
-    if (Deadly_Dodo_PH[mob] ~= nil) then
-
-        ToD = GetServerVariable("[POP]Deadly_Dodo");
-        if (ToD <= os.time(t) and GetMobAction(Deadly_Dodo) == 0) then
-            if (math.random((1),(3)) == 2) then
-                UpdateNMSpawnPoint(Deadly_Dodo);
-                GetMobByID(Deadly_Dodo):setRespawnTime(GetMobRespawnTime(mob));
-                SetServerVariable("[PH]Deadly_Dodo", mob);
-                DeterMob(mob, true);
-            end
-        end
-    end
-
+function onMobDespawn(mob)
+    phOnDespawn(mob,DEADLY_DODO_PH,33,3600); -- 1 hour
 end;

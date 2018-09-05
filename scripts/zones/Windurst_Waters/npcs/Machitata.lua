@@ -1,30 +1,20 @@
 -----------------------------------
---    Area: Windurst Waters
---    NPC:  Machitata
---    Involved in Quest: Hat in Hand
---    Working 100%
---  @zone = 238
---  @pos = 163 0 -22
+-- Area: Windurst Waters
+--  NPC: Machitata
+-- Involved in Quest: Hat in Hand
+-- !pos 163 0 -22 238
 -----------------------------------
 package.loaded["scripts/zones/Windurst_Waters/TextIDs"] = nil;
 -----------------------------------
-
-require("scripts/globals/quests");
-require("scripts/globals/settings");
-require("scripts/globals/titles");
-require("scripts/globals/keyitems");
 require("scripts/zones/Windurst_Waters/TextIDs");
-
------------------------------------
--- onTrade Action
+require("scripts/globals/settings");
+require("scripts/globals/keyitems");
+require("scripts/globals/quests");
+require("scripts/globals/titles");
 -----------------------------------
 
 function onTrade(player,npc,trade)
-end;      
-
------------------------------------
--- onTrigger Action
------------------------------------
+end;
 
 function onTrigger(player,npc)
     function testflag(set,flag)
@@ -36,24 +26,12 @@ function onTrigger(player,npc)
         player:setVar("QuestHatInHand_var",player:getVar("QuestHatInHand_var")+1);
         player:setVar("QuestHatInHand_count",player:getVar("QuestHatInHand_count")+1);
     end
-end; 
-
------------------------------------
--- onEventUpdate
------------------------------------
-
-function onEventUpdate(player,csid,option)
---printf("CSID: %u",csid);
---printf("RESULT: %u",option);
 end;
 
------------------------------------
--- onEventFinish
------------------------------------
+function onEventUpdate(player,csid,option)
+end;
 
 function onEventFinish(player,csid,option)
---printf("CSID: %u",csid);
---printf("RESULT: %u",option);
 end;
 
 

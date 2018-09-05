@@ -1,12 +1,11 @@
 -----------------------------------
 -- Area: Balga's Dais
--- NPC:  Burning Circle
+--  NPC: Burning Circle
 -- Balga's Dais Burning Circle
--- @pos 299 -123 345 146
+-- !pos 299 -123 345 146
 -------------------------------------
 package.loaded["scripts/zones/Balgas_Dais/TextIDs"] = nil;
 -------------------------------------
-
 require("scripts/globals/keyitems");
 require("scripts/globals/bcnm");
 require("scripts/zones/Balgas_Dais/TextIDs");
@@ -30,54 +29,38 @@ require("scripts/zones/Balgas_Dais/TextIDs");
     ---- 16: Royale Ramble (KSNM 30, Lachesis Orb)
     ---- 17: Moa Constrictors (KSNM 30, Atropos Orb
 
------------------------------------
--- onTrade Action
------------------------------------
-
 function onTrade(player,npc,trade)
-    
+
     if (TradeBCNM(player,player:getZoneID(),trade,npc)) then
         return;
     end
-    
+
 end;
 
------------------------------------
--- onTrigger Action
------------------------------------
-
 function onTrigger(player,npc)
-    
+
     if (EventTriggerBCNM(player,npc)) then
         return;
     end
-    
+
 end;
 
------------------------------------
--- onEventUpdate
------------------------------------
-
 function onEventUpdate(player,csid,option)
---printf("onUpdate CSID: %u",csid);
---printf("onUpdate RESULT: %u",option);
-    
+    -- printf("onUpdate CSID: %u",csid);
+    -- printf("onUpdate RESULT: %u",option);
+
     if (EventUpdateBCNM(player,csid,option)) then
         return;
     end
-    
+
 end;
 
------------------------------------
--- onEventFinish Action
------------------------------------
-
 function onEventFinish(player,csid,option)
---printf("onFinish CSID: %u",csid);
---printf("onFinish RESULT: %u",option);
-    
+    -- printf("onFinish CSID: %u",csid);
+    -- printf("onFinish RESULT: %u",option);
+
     if (EventFinishBCNM(player,csid,option)) then
         return;
     end
-    
+
 end;

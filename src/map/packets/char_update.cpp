@@ -1,4 +1,4 @@
-﻿/*
+/*
 ===========================================================================
 
   Copyright (c) 2010-2015 Darkstar Dev Teams
@@ -31,71 +31,77 @@
 #include "../entities/charentity.h"
 #include "../utils/itemutils.h"
 #include "../vana_time.h"
-
+#include "../status_effect_container.h"
 
 CCharUpdatePacket::CCharUpdatePacket(CCharEntity* PChar)
 {
-	this->type = 0x37;
-	this->size = 0x2E;
+    this->type = 0x37;
+    this->size = 0x30;
 
-	memcpy(data+(0x04), PChar->StatusEffectContainer->m_StatusIcons, 32);
+    memcpy(data + (0x04), PChar->StatusEffectContainer->m_StatusIcons, 32);
 
-	WBUFL(data,(0x24)) = PChar->id;
-	WBUFB(data,(0x2A)) = PChar->GetHPP();
+    ref<uint32>(0x24) = PChar->id;
+    ref<uint8>(0x2A) = PChar->GetHPP();
 
-	WBUFB(data,(0x28)) = (PChar->nameflags.byte2 << 1);
-	WBUFB(data,(0x2B)) = (PChar->nameflags.byte4 << 5) + PChar->nameflags.byte3;
-	WBUFB(data,(0x2F)) = ((PChar->nameflags.byte4 >> 2) & 0xFE);
-    
-	if (PChar->StatusEffectContainer->HasStatusEffectByFlag(EFFECTFLAG_INVISIBLE))
-	{
-		WBUFB(data,(0x2D)) = 0x80;
-	}
-	if (PChar->StatusEffectContainer->HasStatusEffect(EFFECT_SNEAK))
-	{
-		WBUFB(data,(0x38)) = 0x04;
-	}
+    ref<uint8>(0x28) = (PChar->nameflags.byte2 << 1);
+    ref<uint8>(0x2B) = (PChar->nameflags.byte4 << 5) + PChar->nameflags.byte3;
+    ref<uint8>(0x2F) = ((PChar->nameflags.byte4 >> 2) & 0xFE);
+    ref<uint8>(0x2F) |= PChar->isCharmed ? 0x40 : 0x00;
 
-    if (PChar->m_mentor >= 2)
-        WBUFB(data,(0x38)) |= 0x10; // Mentor flag.
-    if (PChar->m_isNewPlayer)
-        WBUFB(data,(0x38)) |= 0x08; // New player ?
+    if (PChar->StatusEffectContainer->HasStatusEffectByFlag(EFFECTFLAG_INVISIBLE))
+    {
+        ref<uint8>(0x2D) = 0x80;
+    }
+    if (PChar->StatusEffectContainer->HasStatusEffect(EFFECT_SNEAK))
+    {
+        ref<uint8>(0x38) = 0x04;
+    }
 
-    WBUFB(data,(0x29)) = PChar->GetGender() + (PChar->look.size > 0 ? PChar->look.size * 8 : 2); // +  управляем ростом: 0x02 - 0; 0x08 - 1; 0x10 - 2;
-    WBUFB(data,(0x2C)) = PChar->GetSpeed();
-    WBUFW(data,(0x2E)) |= PChar->speedsub << 1;
-	WBUFB(data,(0x30)) = PChar->animation;
+    if (PChar->menuConfigFlags.flags & NFLAG_MENTOR)
+        ref<uint8>(0x38) |= 0x10; // Mentor flag.
+    if (PChar->isNewPlayer())
+        ref<uint8>(0x38) |= 0x08; // New player ?
 
-	CItemLinkshell* linkshell = (CItemLinkshell*)PChar->getEquip(SLOT_LINK1);
+    ref<uint8>(0x29) = PChar->GetGender() + (PChar->look.size > 0 ? PChar->look.size * 8 : 2); // +  управляем ростом: 0x02 - 0; 0x08 - 1; 0x10 - 2;
+    ref<uint8>(0x2C) = PChar->GetSpeed();
+    ref<uint16>(0x2E) |= PChar->speedsub << 1;
+    ref<uint8>(0x30) = PChar->m_event.EventID != -1 ? ANIMATION_EVENT : PChar->animation;
 
-	if ((linkshell != nullptr) && linkshell->isType(ITEM_LINKSHELL))
-	{
-		lscolor_t LSColor = linkshell->GetLSColor();
+    CItemLinkshell* linkshell = (CItemLinkshell*)PChar->getEquip(SLOT_LINK1);
 
-		WBUFB(data,(0x31)) = (LSColor.R << 4) + 15;
-		WBUFB(data,(0x32)) = (LSColor.G << 4) + 15;
-		WBUFB(data,(0x33)) = (LSColor.B << 4) + 15;
-	}
-	if (PChar->PPet != nullptr)
-	{
-		WBUFW(data,(0x34)) = PChar->PPet->targid << 3;
-	}
+    if ((linkshell != nullptr) && linkshell->isType(ITEM_LINKSHELL))
+    {
+        lscolor_t LSColor = linkshell->GetLSColor();
+
+        ref<uint8>(0x31) = (LSColor.R << 4) + 15;
+        ref<uint8>(0x32) = (LSColor.G << 4) + 15;
+        ref<uint8>(0x33) = (LSColor.B << 4) + 15;
+    }
+    if (PChar->PPet != nullptr)
+    {
+        ref<uint16>(0x34) = PChar->PPet->targid << 3;
+    }
     //Status flag: bit 4: frozen anim (terror),
     //  bit 6/7/8 related to Ballista (6 set - normal, 7 set san d'oria, 6+7 set bastok, 8 set windurst)
-    uint8 flag = 0x20;
+    uint8 flag = (PChar->allegiance << 5);
+    
     if (PChar->StatusEffectContainer->HasStatusEffect(EFFECT_TERROR))
         flag |= 0x08;
-    WBUFB(data,(0x36)) = flag;
+    
+    ref<uint8>(0x36) = flag;
 
     if (!PChar->isDead() || PChar->m_DeathCounter == 0) //prevent this packet from resetting the homepoint timer after tractor
-        WBUFL(data,(0x3C)) = 0x0003A020;
+        ref<uint32>(0x3C) = 0x0003A020;
 
-    WBUFL(data,(0x40)) = CVanaTime::getInstance()->getVanaTime();
-    WBUFW(data,(0x44)) = PChar->m_Costum;
+    ref<uint32>(0x40) = CVanaTime::getInstance()->getVanaTime();
+    ref<uint16>(0x44) = PChar->m_Costum;
 
-	if (PChar->animation == ANIMATION_FISHING_START)
-	{
-		WBUFB(data,(0x4A)) = 0x10;
-	}
-	WBUFU(data,(0x4C)) = PChar->StatusEffectContainer->m_Flags;
+    if (PChar->animation == ANIMATION_FISHING_START)
+    {
+        ref<uint8>(0x4A) = 0x0D; //was 0x10
+    }
+    ref<uint64>(0x4C) = PChar->StatusEffectContainer->m_Flags;
+
+    if (PChar->animation == ANIMATION_MOUNT)
+        ref<uint16>(0x5B) = PChar->StatusEffectContainer->GetStatusEffect(EFFECT_MOUNTED)->GetPower();
 }

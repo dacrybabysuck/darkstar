@@ -4,20 +4,16 @@
 -- Involved in Quest: Trial by Fire
 -- Involved in Mission: ASA-4 Sugar Coated Directive
 -----------------------------------------------------
-
 require("scripts/globals/settings");
 require("scripts/globals/keyitems");
 require("scripts/globals/status");
-
------------------------------------
--- OnMobFight Action
 -----------------------------------
 
 function onMobFight(mob, target)
     local mobId = mob:getID();
 
     -- ASA-4: Astral Flow Behavior - Guaranteed to Use At Least 5 times before killable, at specified intervals.
-    if (mob:getBattlefield():getBcnmID() == 547 and GetMobAction(mobId) == ACTION_ATTACK) then
+    if (mob:getBattlefield():getBcnmID() == 547 and GetMobAction(mobId) == dsp.act.ATTACK) then
         local astralFlows = mob:getLocalVar("astralflows");
         if ((astralFlows == 0 and mob:getHPP() <= 80)
         or (astralFlows == 1 and mob:getHPP() <= 60)
@@ -25,7 +21,7 @@ function onMobFight(mob, target)
         or (astralFlows == 3 and mob:getHPP() <= 20)
         or (astralFlows == 4 and mob:getHPP() <= 1)) then
             mob:setLocalVar("astralflows",astralFlows + 1);
-            mob:useMobAbility(592);
+            mob:useMobAbility(848);
             if (astralFlows >= 5) then
                 mob:setUnkillable(false);
             end
@@ -33,10 +29,6 @@ function onMobFight(mob, target)
     end
 
 end;
-
------------------------------------
--- OnMobSpawn Action
------------------------------------
 
 function onMobSpawn(mob)
     -- ASA-4: Avatar is Unkillable Until Its Used Astral Flow At Least 5 times At Specified Intervals
@@ -46,9 +38,5 @@ function onMobSpawn(mob)
     end
 end;
 
------------------------------------
--- OnMobDeath Action
------------------------------------
-
-function onMobDeath(mob, killer, ally)
+function onMobDeath(mob, player, isKiller)
 end;

@@ -3,30 +3,15 @@
 --  MOB: Goblin Reaper
 -- Note: Place holder Goblinsavior Heronox
 -----------------------------------
-
 require("scripts/zones/Gustav_Tunnel/MobIDs");
+require("scripts/globals/groundsofvalor");
+require("scripts/globals/mobs");
 
------------------------------------
--- onMobDeath
------------------------------------
+function onMobDeath(mob, player, isKiller)
+    checkGoVregime(player,mob,764,3);
+    checkGoVregime(player,mob,765,3);
+end;
 
-function onMobDeath(mob,killer,ally)
-
-    checkGoVregime(ally,mob,764,3);
-    checkGoVregime(ally,mob,765,3);
-
-    local mob = mob:getID();
-    if (Goblinsavior_Heronox_PH[mob] ~= nil) then
-
-        local ToD = GetServerVariable("[POP]Goblinsavior_Heronox");
-        if (ToD <= os.time(t) and GetMobAction(Goblinsavior_Heronox) == 0) then
-            if (math.random((1),(20)) == 5) then
-                UpdateNMSpawnPoint(Goblinsavior_Heronox);
-                GetMobByID(Goblinsavior_Heronox):setRespawnTime(GetMobRespawnTime(mob));
-                SetServerVariable("[PH]Goblinsavior_Heronox", mob);
-                DeterMob(mob, true);
-            end
-        end
-    end
-
+function onMobDespawn(mob)
+    phOnDespawn(mob,GOBLINSAVIOR_HERONOX_PH,5,math.random(10800,18000)); -- 3 to 5 hours
 end;

@@ -1,29 +1,16 @@
 -----------------------------------
---  Area: Crawlers' Nest (197)
---   Mob: Wespe
+-- Area: Crawlers' Nest (197)
+--  Mob: Wespe
+-- Note: PH for Demonic Tiphia
 -----------------------------------
-
 require("scripts/zones/Crawlers_Nest/MobIDs");
+require("scripts/globals/groundsofvalor");
+require("scripts/globals/mobs");
 
------------------------------------
--- onMobDeath
------------------------------------
+function onMobDeath(mob, player, isKiller)
+    checkGoVregime(player,mob,691,2);
+end;
 
-function onMobDeath(mob,killer,ally)
-
-    checkGoVregime(ally,mob,691,2);
-
-    local mob = mob:getID();
-    if (Demonic_Tiphia_PH[mob] ~= nil) then
-
-        local ToD = GetServerVariable("[POP]Demonic_Tiphia");
-        if (ToD <= os.time(t) and GetMobAction(Demonic_Tiphia) == 0) then
-            if (math.random((1),(20)) == 5) then
-                UpdateNMSpawnPoint(Demonic_Tiphia);
-                GetMobByID(Demonic_Tiphia):setRespawnTime(GetMobRespawnTime(mob));
-                SetServerVariable("[PH]Demonic_Tiphia", mob);
-                DeterMob(mob, true);
-            end
-        end
-    end
+function onMobDespawn(mob)
+    phOnDespawn(mob,DEMONIC_TIPHIA_PH,5,math.random(7200,28800)); -- 2 to 8 hours
 end;

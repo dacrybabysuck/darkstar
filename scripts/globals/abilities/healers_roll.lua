@@ -5,6 +5,7 @@
 -- Lucky Number: 3
 -- Unlucky Number: 7
 -- Level: 20
+-- Phantom Roll +1 Value: 3
 --
 -- Die Roll    |No WHM  |With WHM
 -- --------    -------  -----------
@@ -23,57 +24,52 @@
 --
 -- Note that this roll will increase potency of cures received, not the potency of the caster's spells
 -----------------------------------
-
-require("scripts/globals/settings");
-require("scripts/globals/status");
-
------------------------------------
--- onAbilityCheck
+require("scripts/globals/settings")
+require("scripts/globals/ability")
+require("scripts/globals/status")
+require("scripts/globals/msg")
 -----------------------------------
 
 function onAbilityCheck(player,target,ability)
-    local effectID = getCorsairRollEffect(ability:getID());
-    ability:setRange(ability:getRange() + player:getMod(MOD_ROLL_RANGE));
-    if (player:hasStatusEffect(effectID) or player:hasBustEffect(effectID)) then
-        return MSGBASIC_ROLL_ALREADY_ACTIVE,0;
+    local effectID = dsp.effect.HEALERS_ROLL
+    ability:setRange(ability:getRange() + player:getMod(dsp.mod.ROLL_RANGE))
+    if (player:hasStatusEffect(effectID)) then
+        return dsp.msg.basic.ROLL_ALREADY_ACTIVE,0
+    elseif atMaxCorsairBusts(player) then
+        return dsp.msg.basic.CANNOT_PERFORM,0
     else
-        player:setLocalVar("WHM_roll_bonus", 0);
-        return 0,0;
+        return 0,0
     end
-end;
+end
 
------------------------------------
--- onUseAbilityRoll
------------------------------------
+function onUseAbility(caster,target,ability,action)
+    if (caster:getID() == target:getID()) then
+        corsairSetup(caster, ability, action, dsp.effect.HEALERS_ROLL, dsp.job.WHM)
+    end
+    local total = caster:getLocalVar("corsairRollTotal")
+    return applyRoll(caster,target,ability,action,total)
+end
 
-function onUseAbilityRoll(caster,target,ability,total)
-    local duration = 300 + caster:getMerit(MERIT_WINNING_STREAK)
+function applyRoll(caster,target,ability,action,total)
+    local duration = 300 + caster:getMerit(dsp.merit.WINNING_STREAK) + caster:getMod(dsp.mod.PHANTOM_DURATION)
     local effectpowers = {3, 4, 12, 5, 6, 7, 1, 8, 9, 10, 16, 4}
     local effectpower = effectpowers[total]
-    local jobBonus = caster:getLocalVar("WHM_roll_bonus");
-
-    if (total < 12) then -- see chaos_roll.lua for comments
-        if (jobBonus == 0) then
-            if (caster:hasPartyJob(JOB_WHM) or math.random(0, 99) < caster:getMod(MOD_JOB_BONUS_CHANCE)) then
-                jobBonus = 1;
-            else
-                jobBonus = 2;
-            end
-        end
-        if (jobBonus == 1) then
-            effectpower = effectpower + 4;
-        end
-        if (target:getID() == caster:getID()) then
-            caster:setLocalVar("WHM_roll_bonus", jobBonus);
-        end
+    if (caster:getLocalVar("corsairRollBonus") == 1 and total < 12) then
+        effectpower = effectpower + 4
     end
-
-    if (caster:getMainJob() == JOB_COR and caster:getMainLvl() < target:getMainLvl()) then
-        effectpower = effectpower * (caster:getMainLvl() / target:getMainLvl());
-    elseif (caster:getSubJob() == JOB_COR and caster:getSubLvl() < target:getMainLvl()) then
-        effectpower = effectpower * (caster:getSubLvl() / target:getMainLvl());
+-- Apply Additional Phantom Roll+ Buff
+    local phantomBase = 3 -- Base increment buff
+    local effectpower = effectpower + (phantomBase * phantombuffMultiple(caster))
+-- Check if COR Main or Sub
+    if (caster:getMainJob() == dsp.job.COR and caster:getMainLvl() < target:getMainLvl()) then
+        effectpower = effectpower * (caster:getMainLvl() / target:getMainLvl())
+    elseif (caster:getSubJob() == dsp.job.COR and caster:getSubLvl() < target:getMainLvl()) then
+        effectpower = effectpower * (caster:getSubLvl() / target:getMainLvl())
     end
-    if (target:addCorsairRoll(caster:getMainJob(), caster:getMerit(MERIT_BUST_DURATION), EFFECT_HEALERS_ROLL, effectpower, 0, duration, caster:getID(), total, MOD_CURE_POTENCY_RCVD) == false) then
-        ability:setMsg(423);
+    if (target:addCorsairRoll(caster:getMainJob(), caster:getMerit(dsp.merit.BUST_DURATION), dsp.effect.HEALERS_ROLL, effectpower, 0, duration, caster:getID(), total, dsp.mod.CURE_POTENCY_RCVD) == false) then
+        ability:setMsg(dsp.msg.basic.ROLL_MAIN_FAIL)
+    elseif total > 11 then
+        ability:setMsg(dsp.msg.basic.DOUBLEUP_BUST)
     end
-end;
+    return total
+end

@@ -27,15 +27,13 @@ This file is part of DarkStar-server source code.
 #include "../../common/cbasetypes.h"
 #include "../../common/lua/lunar.h"
 
-#include "../instance.h"
-
-
+class CInstance;
 class CLuaInstance
 {
     CInstance* m_PLuaInstance;
 public:
 
-    static const int8 className[];
+    static const char className[];
     static Lunar<CLuaInstance>::Register_t methods[];
 
     CLuaInstance(lua_State*);
@@ -47,6 +45,7 @@ public:
     }
 
     int32 getID(lua_State*);
+    int32 getAllies(lua_State*);
     int32 getChars(lua_State*);
     int32 getMobs(lua_State*);
     int32 getNpcs(lua_State*);

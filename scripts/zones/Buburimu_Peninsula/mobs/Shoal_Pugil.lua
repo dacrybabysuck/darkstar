@@ -1,29 +1,16 @@
 -----------------------------------
--- Area: Buburimu Peninsula
+-- Area: Buburimu Peninsula (118)
 --  MOB: Shoal Pugil
+-- Note: PH for Buburimboo
 -----------------------------------
-
-require("scripts/globals/fieldsofvalor");
 require("scripts/zones/Buburimu_Peninsula/MobIDs");
+require("scripts/globals/fieldsofvalor");
+require("scripts/globals/mobs");
 
------------------------------------
--- onMobDeath
------------------------------------
+function onMobDeath(mob, player, isKiller)
+    checkRegime(player,mob,62,1);
+end;
 
-function onMobDeath(mob,killer,ally)
-    checkRegime(ally,mob,62,1);
-
-    local mob = mob:getID();
-    if (Buburimboo_PH[mob] ~= nil) then
-
-        local ToD = GetServerVariable("[POP]Buburimboo");
-        if (ToD <= os.time(t) and GetMobAction(Buburimboo) == 0) then
-            if (math.random((1),(20)) == 5) then
-                UpdateNMSpawnPoint(Buburimboo);
-                GetMobByID(Buburimboo):setRespawnTime(GetMobRespawnTime(mob));
-                SetServerVariable("[PH]Buburimboo", mob);
-                DeterMob(mob, true);
-            end
-        end
-    end
+function onMobDespawn(mob)
+    phOnDespawn(mob,BUBURIMBOO_PH,5,math.random(3600,7200)); -- 1 to 2 hours
 end;

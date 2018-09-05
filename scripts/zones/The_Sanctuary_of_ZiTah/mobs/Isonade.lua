@@ -3,24 +3,16 @@
 --  MOB: Isonade
 -- Involved in Quest: The Sacred Katana
 -----------------------------------
-
 require("scripts/globals/quests");
-
------------------------------------
--- onMobSpawn Action
 -----------------------------------
 
 function onMobSpawn(mob)
 end;
 
------------------------------------
--- onMobDeath Action
------------------------------------
+function onMobDeath(mob, player, isKiller)
 
-function onMobDeath(mob, killer, ally)
-
-    if (ally:getQuestStatus(OUTLANDS,THE_SACRED_KATANA) == QUEST_ACCEPTED) then
-        ally:setVar("IsonadeKilled",1);
+    if (player:getQuestStatus(OUTLANDS,THE_SACRED_KATANA) == QUEST_ACCEPTED) then
+        player:setVar("IsonadeKilled",1);
     end
 
 end;

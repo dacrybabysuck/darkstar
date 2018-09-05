@@ -1,23 +1,15 @@
 -----------------------------------------
---    ID: 5297
---    Mithran Rice Cake
---    Enchantment: 60Min, Costume - Mithra Child
+-- ID: 5297
+-- Mithran Rice Cake
+-- Enchantment: 60Min, Costume - Mithra Child
 -----------------------------------------
-
-require("scripts/globals/status");
-
------------------------------------------
--- OnItemCheck
+require("scripts/globals/status")
 -----------------------------------------
 
 function onItemCheck(target)
-    return target:canUseCostume();
-end;
-
------------------------------------------
--- OnItemUse
------------------------------------------
+    return target:canUseCostume()
+end
 
 function onItemUse(target)
-    target:addStatusEffect(EFFECT_COSTUME,182,0,3600);
-end;
+    target:addStatusEffect(dsp.effect.COSTUME,182,0,3600)
+end

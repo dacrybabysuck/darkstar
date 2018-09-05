@@ -2,20 +2,11 @@
 -- Area: Konschtat Highlands
 --  MOB: Stray_Mary
 -----------------------------------
-
 require("scripts/globals/titles");
 
------------------------------------
--- onMobSpawn Action
------------------------------------
-
-function onMobSpawn(mob)
+function onMobDeath(mob, player, isKiller)
+    player:addTitle(dsp.title.MARYS_GUIDE);
 end;
 
------------------------------------
--- onMobDeath
------------------------------------
-
-function onMobDeath(mob, killer, ally)
-    ally:addTitle(MARYS_GUIDE);
+function onMobDespawn(mob)
 end;

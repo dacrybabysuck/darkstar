@@ -33,18 +33,21 @@
 #include <string.h>
 
 #include "enmity_container.h"
+#include "latent_effect_container.h"
+#include "linkshell.h"
 #include "map.h"
 #include "message.h"
+#include "party.h"
 #include "spell.h"
+#include "status_effect_container.h"
 #include "treasure_pool.h"
 #include "vana_time.h"
 #include "zone.h"
 #include "zone_entities.h"
 
-#include "ai/ai_mob_dummy.h"
-
 #include "entities/npcentity.h"
 #include "entities/petentity.h"
+#include "entities/automatonentity.h"
 
 #include "lua/luautils.h"
 
@@ -76,9 +79,9 @@
 *                                                                       *
 ************************************************************************/
 
-int32 zone_server(uint32 tick, CTaskMgr::CTask* PTask)
+int32 zone_server(time_point tick, CTaskMgr::CTask* PTask)
 {
-    ((CZone*)PTask->m_data)->ZoneServer(tick);
+    std::any_cast<CZone*>(PTask->m_data)->ZoneServer(tick, false);
     return 0;
 }
 
@@ -89,17 +92,17 @@ int32 zone_server(uint32 tick, CTaskMgr::CTask* PTask)
 *                                                                       *
 ************************************************************************/
 
-int32 zone_server_region(uint32 tick, CTaskMgr::CTask* PTask)
+int32 zone_server_region(time_point tick, CTaskMgr::CTask* PTask)
 {
-    CZone* PZone = (CZone*)PTask->m_data;
+    CZone* PZone = std::any_cast<CZone*>(PTask->m_data);
 
-    if ((tick - PZone->m_RegionCheckTime) < 1000)
+    if ((tick - PZone->m_RegionCheckTime) < 800ms)
     {
-        PZone->ZoneServer(tick);
+        PZone->ZoneServer(tick, false);
     }
     else
     {
-        PZone->ZoneServerRegion(tick);
+        PZone->ZoneServer(tick, true);
         PZone->m_RegionCheckTime = tick;
     }
     return 0;
@@ -111,9 +114,9 @@ int32 zone_server_region(uint32 tick, CTaskMgr::CTask* PTask)
 *                                                                       *
 ************************************************************************/
 
-int32 zone_update_weather(uint32 tick, CTaskMgr::CTask* PTask)
+int32 zone_update_weather(time_point tick, CTaskMgr::CTask* PTask)
 {
-    CZone* PZone = (CZone*)PTask->m_data;
+    CZone* PZone = std::any_cast<CZone*>(PTask->m_data);
 
     if (!PZone->IsWeatherStatic())
     {
@@ -138,7 +141,6 @@ CZone::CZone(ZONEID ZoneID, REGIONTYPE RegionID, CONTINENTTYPE ContinentID)
     m_regionID = RegionID;
     m_continentID = ContinentID;
     m_TreasurePool = 0;
-    m_RegionCheckTime = 0;
     m_BattlefieldHandler = nullptr;
     m_Weather = WEATHER_NONE;
     m_WeatherChangeTime = 0;
@@ -171,7 +173,7 @@ ZONEID CZone::GetID()
 
 ZONETYPE CZone::GetType()
 {
-  return m_zoneType;
+    return m_zoneType;
 }
 
 REGIONTYPE CZone::GetRegionID()
@@ -211,7 +213,7 @@ uint32 CZone::GetWeatherChangeTime()
 
 const int8* CZone::GetName()
 {
-    return m_zoneName.c_str();
+    return (const int8*)m_zoneName.c_str();
 }
 
 uint8 CZone::GetSoloBattleMusic()
@@ -247,8 +249,8 @@ bool CZone::IsWeatherStatic()
 zoneLine_t* CZone::GetZoneLine(uint32 zoneLineID)
 {
     for (zoneLineList_t::const_iterator  i = m_zoneLineList.begin();
-         i != m_zoneLineList.end();
-         i++)
+    i != m_zoneLineList.end();
+        i++)
     {
         if ((*i)->m_zoneLineID == zoneLineID)
         {
@@ -267,7 +269,7 @@ zoneLine_t* CZone::GetZoneLine(uint32 zoneLineID)
 
 void CZone::LoadZoneLines()
 {
-    static const int8 fmtQuery[] = "SELECT zoneline, tozone, tox, toy, toz, rotation FROM zonelines WHERE fromzone = %u";
+    static const char fmtQuery[] = "SELECT zoneline, tozone, tox, toy, toz, rotation FROM zonelines WHERE fromzone = %u";
 
     int32 ret = Sql_Query(SqlHandle, fmtQuery, m_zoneID);
 
@@ -277,12 +279,12 @@ void CZone::LoadZoneLines()
         {
             zoneLine_t* zl = new zoneLine_t;
 
-            zl->m_zoneLineID = (uint32)Sql_GetIntData(SqlHandle,0);
-            zl->m_toZone  = (uint16)Sql_GetIntData(SqlHandle,1);
-            zl->m_toPos.x = Sql_GetFloatData(SqlHandle,2);
-            zl->m_toPos.y = Sql_GetFloatData(SqlHandle,3);
-            zl->m_toPos.z = Sql_GetFloatData(SqlHandle,4);
-            zl->m_toPos.rotation = (uint8)Sql_GetIntData(SqlHandle,5);
+            zl->m_zoneLineID = (uint32)Sql_GetIntData(SqlHandle, 0);
+            zl->m_toZone = (uint16)Sql_GetIntData(SqlHandle, 1);
+            zl->m_toPos.x = Sql_GetFloatData(SqlHandle, 2);
+            zl->m_toPos.y = Sql_GetFloatData(SqlHandle, 3);
+            zl->m_toPos.z = Sql_GetFloatData(SqlHandle, 4);
+            zl->m_toPos.rotation = (uint8)Sql_GetIntData(SqlHandle, 5);
 
             m_zoneLineList.push_back(zl);
         }
@@ -297,12 +299,12 @@ void CZone::LoadZoneLines()
 
 void CZone::LoadZoneWeather()
 {
-    static const int8* Query =
+    static const char* Query =
         "SELECT "
-          "weather_day,"
-          "normal,"
-          "common,"
-          "rare "
+        "weather_day,"
+        "normal,"
+        "common,"
+        "rare "
         "FROM zone_weather "
         "WHERE zoneid = %u "
         "ORDER BY weather_day";
@@ -331,19 +333,19 @@ void CZone::LoadZoneWeather()
 
 void CZone::LoadZoneSettings()
 {
-    static const int8* Query =
+    static const char* Query =
         "SELECT "
-          "zone.name,"
-          "zone.zoneip,"
-          "zone.zoneport,"
-          "zone.music_day,"
-          "zone.music_night,"
-          "zone.battlesolo,"
-          "zone.battlemulti,"
-          "zone.tax,"
-          "zone.misc,"
-          "zone.zonetype,"
-          "bcnm.name "
+        "zone.name,"
+        "zone.zoneip,"
+        "zone.zoneport,"
+        "zone.music_day,"
+        "zone.music_night,"
+        "zone.battlesolo,"
+        "zone.battlemulti,"
+        "zone.tax,"
+        "zone.misc,"
+        "zone.zonetype,"
+        "bcnm.name "
         "FROM zone_settings AS zone "
         "LEFT JOIN bcnm_info AS bcnm "
         "USING (zoneid) "
@@ -354,20 +356,20 @@ void CZone::LoadZoneSettings()
         Sql_NumRows(SqlHandle) != 0 &&
         Sql_NextRow(SqlHandle) == SQL_SUCCESS)
     {
-        m_zoneName.insert(0, Sql_GetData(SqlHandle,0));
+        m_zoneName.insert(0, (const char*)Sql_GetData(SqlHandle, 0));
 
-        m_zoneIP   = inet_addr(Sql_GetData(SqlHandle,1));
-        m_zonePort = (uint16)Sql_GetUIntData(SqlHandle,2);
+        m_zoneIP = inet_addr((const char*)Sql_GetData(SqlHandle, 1));
+        m_zonePort = (uint16)Sql_GetUIntData(SqlHandle, 2);
         m_zoneMusic.m_songDay = (uint8)Sql_GetUIntData(SqlHandle, 3);   // background music (day)
         m_zoneMusic.m_songNight = (uint8)Sql_GetUIntData(SqlHandle, 4);   // background music (night)
-        m_zoneMusic.m_bSongS = (uint8)Sql_GetUIntData(SqlHandle,5);   // solo battle music
-        m_zoneMusic.m_bSongM = (uint8)Sql_GetUIntData(SqlHandle,6);   // party battle music
-        m_tax = (uint16)(Sql_GetFloatData(SqlHandle,7) * 100);      // tax for bazaar
-        m_miscMask = (uint16)Sql_GetUIntData(SqlHandle,8);
+        m_zoneMusic.m_bSongS = (uint8)Sql_GetUIntData(SqlHandle, 5);   // solo battle music
+        m_zoneMusic.m_bSongM = (uint8)Sql_GetUIntData(SqlHandle, 6);   // party battle music
+        m_tax = (uint16)(Sql_GetFloatData(SqlHandle, 7) * 100);      // tax for bazaar
+        m_miscMask = (uint16)Sql_GetUIntData(SqlHandle, 8);
 
         m_zoneType = (ZONETYPE)Sql_GetUIntData(SqlHandle, 9);
 
-        if (Sql_GetData(SqlHandle,10) != nullptr) // сейчас нельзя использовать bcnmid, т.к. они начинаются с нуля
+        if (Sql_GetData(SqlHandle, 10) != nullptr) // сейчас нельзя использовать bcnmid, т.к. они начинаются с нуля
         {
             m_BattlefieldHandler = new CBattlefieldHandler(m_zoneID);
         }
@@ -389,8 +391,8 @@ void CZone::LoadNavMesh()
         m_navMesh = new CNavMesh((uint16)GetID());
     }
 
-    int8 file[255];
-    memset(file,0,sizeof(file));
+    char file[255];
+    memset(file, 0, sizeof(file));
     snprintf(file, sizeof(file), "navmeshes/%s.nav", GetName());
 
     if (!m_navMesh->load(file))
@@ -503,11 +505,10 @@ void CZone::UpdateWeather()
     uint32 EndFogVanaDate = StartFogVanaDate + (VTIME_HOUR * 5); // Vanadiel timestamp of 7 AM in minutes
     uint32 WeatherNextUpdate = 0;
     uint32 WeatherDay = 0;
-    uint8 WeatherOffset = 0;
     uint8 WeatherChance = 0;
 
     // Random time between 3 minutes and 30 minutes for the next weather change
-    WeatherNextUpdate = (dsprand::GetRandomNumber(180,1620));
+    WeatherNextUpdate = (dsprand::GetRandomNumber(180, 1620));
 
     // Find the timestamp since the start of vanadiel
     WeatherDay = CVanaTime::getInstance()->getVanaTime();
@@ -564,7 +565,8 @@ void CZone::UpdateWeather()
 
     //ShowDebug(CL_YELLOW"Zone::zone_update_weather: Weather of %s updated to %u\n" CL_RESET, PZone->GetName(), Weather);
 
-    CTaskMgr::getInstance()->AddTask(new CTaskMgr::CTask("zone_update_weather", gettick() + (WeatherNextUpdate * 1000), this, CTaskMgr::TASK_ONCE, zone_update_weather));
+    CTaskMgr::getInstance()->AddTask(new CTaskMgr::CTask("zone_update_weather",
+        server_clock::now() + std::chrono::seconds(WeatherNextUpdate), this, CTaskMgr::TASK_ONCE, zone_update_weather));
 }
 
 /************************************************************************
@@ -772,28 +774,14 @@ void CZone::WideScan(CCharEntity* PChar, uint16 radius)
 *                                                                       *
 ************************************************************************/
 
-void CZone::ZoneServer(uint32 tick)
+void CZone::ZoneServer(time_point tick, bool check_regions)
 {
-    m_zoneEntities->ZoneServer(tick);
+    m_zoneEntities->ZoneServer(tick, check_regions);
 
     if (m_BattlefieldHandler != nullptr)
     {
         m_BattlefieldHandler->handleBattlefields(tick);
     }
-}
-
-/************************************************************************
-*                                                                       *
-*  Cервер для обработки активности и статус-эффектов сущностей в зоне.  *
-*  Дополнительно обрабатывается проверка на вход и выход персонажей из  *
-*  активных областей (пока реализован только вход в область).           *
-*  При любом раскладе последними должны обрабатываться персонажи        *
-*                                                                       *
-************************************************************************/
-
-void CZone::ZoneServerRegion(uint32 tick)
-{
-    m_zoneEntities->ZoneServerRegion(tick);
 }
 
 void CZone::ForEachChar(std::function<void(CCharEntity*)> func)
@@ -840,11 +828,11 @@ void CZone::createZoneTimer()
 {
     ZoneTimer = CTaskMgr::getInstance()->AddTask(
         m_zoneName,
-        gettick(),
+        server_clock::now(),
         this,
         CTaskMgr::TASK_INTERVAL,
         m_regionList.empty() ? zone_server : zone_server_region,
-        500);
+        std::chrono::milliseconds((int)(1000 / server_tick_rate)));
 }
 
 void CZone::CharZoneIn(CCharEntity* PChar)
@@ -855,16 +843,16 @@ void CZone::CharZoneIn(CCharEntity* PChar)
     PChar->loc.zoning = false;
     PChar->loc.destination = 0;
     PChar->m_InsideRegionID = 0;
-    PChar->ResetLocalVars();
 
     //remove temp items
     charutils::ClearTempItems(PChar);
 
-    if (PChar->animation == ANIMATION_CHOCOBO && !CanUseMisc(MISC_CHOCOBO))
+    if (PChar->isMounted() && !CanUseMisc(MISC_MOUNT))
     {
         PChar->animation = ANIMATION_NONE;
-        PChar->StatusEffectContainer->DelStatusEffectSilent(EFFECT_CHOCOBO);
+        PChar->StatusEffectContainer->DelStatusEffectSilent(EFFECT_MOUNTED);
     }
+
     if (PChar->m_Costum != 0)
     {
         PChar->m_Costum = 0;
@@ -872,7 +860,7 @@ void CZone::CharZoneIn(CCharEntity* PChar)
     }
 
     PChar->ReloadPartyInc();
-    
+
     if (PChar->PParty != nullptr)
     {
         if (m_TreasurePool != nullptr)
@@ -972,16 +960,21 @@ void CZone::CharZoneOut(CCharEntity* PChar)
     PChar->SpawnMOBList.clear();
     PChar->SpawnPETList.clear();
 
-    if (PChar->PParty && PChar->loc.destination != 0 && PChar->m_moghouseID != 0)
+    if (PChar->PParty && PChar->loc.destination != 0 && PChar->m_moghouseID == 0)
     {
         uint8 data[4] {};
-        WBUFL(data, 0) = PChar->PParty->GetPartyID();
+        ref<uint32>(data, 0) = PChar->PParty->GetPartyID();
         message::send(MSG_PT_RELOAD, data, sizeof data, nullptr);
     }
 
     if (PChar->PParty)
     {
         PChar->PParty->PopMember(PChar);
+    }
+
+    if (PChar->PAutomaton)
+    {
+        PChar->PAutomaton->PMaster = nullptr;
     }
 }
 

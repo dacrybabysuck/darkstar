@@ -1,24 +1,16 @@
 -----------------------------------
---  Area: Bibiki Bay
---  NPC:  Noih Tahparawh
---  Type: Manaclipper
---  @pos -392 -3 -385 4
+-- Area: Bibiki Bay
+--  NPC: Noih Tahparawh
+-- Type: Manaclipper
+-- !pos -392 -3 -385 4
 -----------------------------------
-
 package.loaded["scripts/zones/Bibiki_Bay/TextIDs"] = nil;
-
-require("scripts/zones/Bibiki_Bay/TextIDs");
-
 -----------------------------------
--- onTrade Action
+require("scripts/zones/Bibiki_Bay/TextIDs");
 -----------------------------------
 
 function onTrade(player,npc,trade)
 end;
-
------------------------------------
--- onTrigger Action
------------------------------------
 
 function onTrigger(player,npc)
 
@@ -26,21 +18,21 @@ function onTrigger(player,npc)
     local vHour = VanadielHour();
     local vMin  = VanadielMinute();
 
-    if (     vHour <=  7) then            --    Schedule                        
+    if (     vHour <=  7) then            --    Schedule
         --Do nothing.                --    0: A -  8:40 - Bibiki Bay (Sunset Docks)
     elseif ( vHour ==  8 and vMin <= 40) then    --    1: D -  9:20 - Bibiki Bay (Sunset Docks)
         --Do nothing.                --    2: A - 20:40 - Bibiki Bay (Sunset Docks)
     elseif ( vHour ==  8) then            --    3: D - 21:20 - Bibiki Bay (Sunset Docks)
-        schedule = 1;                
-    elseif ( vHour ==  9 and vMin <= 20) then    
-        schedule = 1;                
-    elseif ( vHour <= 19) then            
+        schedule = 1;
+    elseif ( vHour ==  9 and vMin <= 20) then
+        schedule = 1;
+    elseif ( vHour <= 19) then
         schedule = 2;
-    elseif ( vHour == 20 and vMin <= 40) then      
+    elseif ( vHour == 20 and vMin <= 40) then
         schedule = 2;
-    elseif ( vHour == 20) then            
+    elseif ( vHour == 20) then
         schedule = 3;
-    elseif ( vHour == 21 and vMin <= 20) then    
+    elseif ( vHour == 21 and vMin <= 20) then
         schedule = 3;
     end
 
@@ -51,7 +43,7 @@ function onTrigger(player,npc)
     if (     schedule == 0) then -- Arrival, bound for Bibiki Bay (Sunset Docks)
 
         arrive = 1;
-        
+
         if (     vHour == 21) then vHour = 11;
         elseif ( vHour == 22) then vHour = 10;
         elseif ( vHour == 23) then vHour = 9;
@@ -109,23 +101,11 @@ function onTrigger(player,npc)
         seconds = math.floor(2.4 * (vHour * 60 - vMin + 20));
     end
 
-    player:startEvent( 0x0013, seconds, depart, arrive, 3, 0, 0, 0, 0);
+    player:startEvent( 19, seconds, depart, arrive, 3, 0, 0, 0, 0);
 end;
-
------------------------------------
--- onEventUpdate
------------------------------------
 
 function onEventUpdate(player,csid,option)
-    -- printf("CSID: %u",csid);
-    -- printf("RESULT: %u",option);
 end;
 
------------------------------------
--- onEventFinish
------------------------------------
-
 function onEventFinish(player,csid,option)
-    -- printf("CSID: %u",csid);
-    -- printf("RESULT: %u",option);
 end;

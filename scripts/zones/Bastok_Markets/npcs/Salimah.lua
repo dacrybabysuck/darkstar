@@ -1,19 +1,15 @@
 -----------------------------------
--- Area:  Bastok Markets
--- NPC:   Salimah
+-- Area: Bastok Markets
+--  NPC: Salimah
 -- Notes: Start & Finishes Quest: Gourmet
--- @pos -31.687 -6.824 -73.282 235
+-- !pos -31.687 -6.824 -73.282 235
 -----------------------------------
 package.loaded["scripts/zones/Bastok_Markets/TextIDs"] = nil;
 -----------------------------------
-
 require("scripts/globals/quests");
 require("scripts/globals/titles");
 require("scripts/zones/Bastok_Markets/TextIDs");
 require("scripts/globals/settings");
-
------------------------------------
--- onTrade Action
 -----------------------------------
 
 function onTrade(player,npc,trade)
@@ -55,43 +51,27 @@ function onTrade(player,npc,trade)
     end
 end;
 
------------------------------------
--- onTrigger Action
------------------------------------
-
 function onTrigger(player,npc)
 
     if (player:getQuestStatus(BASTOK,GOURMET) ~= QUEST_AVAILABLE and player:needToZone()) then
-        player:startEvent(0x0079);
+        player:startEvent(121);
     else
-        player:startEvent(0x00c8);
+        player:startEvent(200);
     end
 end;
 
------------------------------------
--- onEventUpdate
------------------------------------
-
 function onEventUpdate(player,csid,option)
---printf("CSID: %u",csid);
---printf("RESULT: %u",option);
 end;
 
------------------------------------
--- onEventFinish
------------------------------------
-
 function onEventFinish(player,csid,option)
---printf("CSID: %u",csid);
---printf("RESULT: %u",option);
 
     local Gourmet = player:getQuestStatus(BASTOK,GOURMET);
 
-    if (csid == 0x00c8) then
+    if (csid == 200) then
         if (Gourmet == QUEST_AVAILABLE) then
             player:addQuest(BASTOK,GOURMET);
         end
-    elseif (csid ~= 0x0079) then
+    elseif (csid ~= 121) then
         player:tradeComplete();
         if (Gourmet == QUEST_ACCEPTED) then
             player:completeQuest(BASTOK,GOURMET);
@@ -108,8 +88,8 @@ function onEventFinish(player,csid,option)
 
         player:addGil(gil*GIL_RATE);
         player:messageSpecial(GIL_OBTAINED,gil*GIL_RATE);
-        player:addFame(BASTOK,BAS_FAME*fame);
-        player:addTitle(MOMMYS_HELPER);
+        player:addFame(BASTOK,fame);
+        player:addTitle(dsp.title.MOMMYS_HELPER);
         player:needToZone(true);
     end
 end;
