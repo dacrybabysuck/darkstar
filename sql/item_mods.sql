@@ -22164,8 +22164,8 @@ INSERT INTO `item_mods` VALUES (18347,356,200); -- Stage 4 Yoichinoyumi - Namas 
 INSERT INTO `item_mods` VALUES (18348,24,10); -- Yoichinoyumi LV75 - RNG ATT +10
 INSERT INTO `item_mods` VALUES (18348,26,20); -- RNG ACC +20
 INSERT INTO `item_mods` VALUES (18348,355,200); -- Namas Arrow
-INSERT INTO `item_mods` VALUES (18348,506,50); -- Extra DMG Chance 5%
-INSERT INTO `item_mods` VALUES (18348,507,300); -- Extra DMG X3
+INSERT INTO `item_mods` VALUES (18348,506,350); -- Extra DMG Chance 5%
+INSERT INTO `item_mods` VALUES (18348,507,400); -- Extra DMG X3
 INSERT INTO `item_mods` VALUES (18349,24,15); -- Yoichinoyumi LV80 - RNG ATT +15
 INSERT INTO `item_mods` VALUES (18349,26,25); -- RNG ACC +25
 INSERT INTO `item_mods` VALUES (18349,355,200); -- Namas Arrow
