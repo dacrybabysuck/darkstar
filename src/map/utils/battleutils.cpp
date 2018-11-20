@@ -1,4 +1,4 @@
-﻿/*
+/*
 ===========================================================================
 
   Copyright (c) 2010-2015 Darkstar Dev Teams
@@ -415,132 +415,6 @@ namespace battleutils
         return g_PMobSkillLists[ListID];
     }
 
-    /************************************************************************
-    *                                                                       *
-    *	get mobs 2 hour skills	(should be moved into mobskill.cpp)         *
-    *                                                                       *
-    ************************************************************************/
-    CMobSkill* GetTwoHourMobSkill(JOBTYPE job, uint16 familyId)
-    {
-        uint16 id = 0;
-
-        if(familyId == 335)
-        {
-            // Maat has his own two hour animations
-            switch (job)
-            {
-                case JOB_WAR: id = 752; break;
-                case JOB_MNK: id = 753; break;
-                case JOB_WHM: id = 754; break;
-                case JOB_BLM: id = 755; break;
-                case JOB_RDM: id = 756; break;
-                case JOB_THF: id = 757; break;
-                case JOB_PLD: id = 758; break;
-                case JOB_DRK: id = 759; break;
-                case JOB_BST: id = 760; break;
-                case JOB_BRD: id = 762; break;
-                case JOB_RNG: id = 763; break;
-                case JOB_SAM: id = 764; break;
-                case JOB_NIN: id = 765; break;
-                case JOB_DRG: id = 766; break;
-                case JOB_SMN: id = 767; break;
-                default: break;
-            }
-
-            return GetMobSkill(id);
-        }
-
-        switch (job)
-        {
-            case JOB_WAR: id = 432; break;
-            case JOB_MNK: id = 434; break;
-            case JOB_WHM: id = 433; break;
-            case JOB_BLM: id = 435; break;
-            case JOB_RDM: id = 436; break;
-            case JOB_THF: id = 437; break;
-            case JOB_PLD: id = 438; break;
-            case JOB_DRK: id = 439; break;
-            case JOB_BST: id = 484; break;
-            case JOB_BRD: id = 440; break;
-            case JOB_RNG:
-                          if(familyId == 270 || familyId == 360)
-                          {
-                              // Yagudo has it's own version
-                              id = 865;
-                          }
-                          else if(familyId == 3)
-                          {
-                              // Aern
-                              id = 1389;
-                          }
-                          else if(familyId == 169 || familyId == 358)
-                          {
-                              // Kindred has it's own version
-                              id = 895;
-                          }
-                          else if (familyId == 133 || familyId == 327)
-                          {
-                              // Goblin
-                              id = 479;
-                          }
-                          else if (familyId == 25)
-                          {
-                              // Antica
-                              id = 480;
-                          }
-                          else if (familyId == 189 || familyId == 334)
-                          {
-                              // Orc
-                              id = 481;
-                          }
-                          else if (familyId == 115 || familyId == 359 || familyId == 221
-                                  || familyId == 222 || familyId == 223)
-                          {
-                              // Fomor / Shadow
-                              id = 482;
-                          }
-                          else if (familyId == 328 || (familyId >= 126 && familyId <= 130))
-                          {
-                              // Giga
-                              id = 483;
-                          }
-                          else if(familyId == 337 || familyId == 200 || familyId == 201
-                                  || familyId == 202)
-                          {
-                              // Quadav has it's own version
-                              id = 866;
-                          }
-                          else if(familyId == 171)
-                          {
-                              // Lamiae
-                              id = 1675;
-                          }
-                          else if(familyId == 246)
-                          {
-                              // Troll
-                              id = 1996;
-                          }
-                          else
-                          {
-                              // Defaulting to crappy goblin animation
-                              id = 479;
-                          }
-                          break;
-            case JOB_SAM: id = 474; break;
-            case JOB_NIN: id = 475; break;
-            case JOB_DRG: id = 476; break;
-            case JOB_SMN: id = 2000; break;  // alt 478
-                // case JOB_BLU: id = 1933; break; // alt 2001
-                // case JOB_COR: id = 1934; break; // alt 2002
-                // case JOB_PUP: id = 1935; break; // alt 2003
-                // case JOB_DNC: id = 2454; break; // alt 2004
-                // case JOB_SCH: id = 2102 break;  // alt 2005
-            default: return nullptr;
-        }
-        return GetMobSkill(id);
-    }
-
-
     int32 CalculateEnspellDamage(CBattleEntity* PAttacker, CBattleEntity* PDefender, uint8 Tier, uint8 element) {
         int32 damage = 0;
 
@@ -753,7 +627,7 @@ namespace battleutils
                 case SPIKE_BLAZE:
                 case SPIKE_ICE:
                 case SPIKE_SHOCK:
-                    PAttacker->addHP(-Action->spikesParam);
+                    PAttacker->takeDamage(Action->spikesParam, PDefender);
                     break;
 
                 case SPIKE_DREAD:
@@ -785,14 +659,14 @@ namespace battleutils
                             }
                             PDefender->addHP(Action->spikesParam);
                         }
-                        PAttacker->addHP(-Action->spikesParam);
+                        PAttacker->takeDamage(Action->spikesParam, PDefender);
                     }
                     break;
 
                 case SPIKE_REPRISAL:
                     if (Action->reaction == REACTION_BLOCK)
                     {
-                        PAttacker->addHP(-Action->spikesParam);
+                        PAttacker->takeDamage(Action->spikesParam, PDefender);
                         auto PEffect = PDefender->StatusEffectContainer->GetStatusEffect(EFFECT_REPRISAL);
                         if (PEffect)
                         {
@@ -823,9 +697,9 @@ namespace battleutils
             // Check for status effect proc. Todo: move to scripts soon™ after item additionalEffect refactor Teo is working on
             HandleSpikesStatusEffect(PAttacker, PDefender, Action);
 
-            if (((CMobEntity*)PDefender)->m_HiPCLvl < PAttacker->GetMLevel())
+            if (PAttacker->objtype == TYPE_MOB && ((CMobEntity*)PAttacker)->m_HiPCLvl < PDefender->GetMLevel())
             {
-                ((CMobEntity*)PDefender)->m_HiPCLvl = PAttacker->GetMLevel();
+                ((CMobEntity*)PAttacker)->m_HiPCLvl = PDefender->GetMLevel();
             }
             return true;
         }
@@ -888,7 +762,7 @@ namespace battleutils
             {
                 auto ratio = std::clamp<uint8>(damage / 4, 1, 255);
                 Action->spikesParam = HandleStoneskin(PAttacker, damage - dsprand::GetRandomNumber<uint16>(ratio) + dsprand::GetRandomNumber<uint16>(ratio));
-                PAttacker->addHP(-Action->spikesParam);
+                PAttacker->takeDamage(Action->spikesParam);
             }
 
             // Temp till moved to script.
@@ -1020,7 +894,7 @@ namespace battleutils
                     Action->addEffectMessage = 384;
                 }
 
-                PDefender->addHP(-Action->addEffectParam);
+                PDefender->takeDamage(Action->addEffectParam, PAttacker);
             }
             else if (enspell > 8 && enspell <= 14 && isFirstSwing)
             {
@@ -1034,7 +908,7 @@ namespace battleutils
                     Action->addEffectMessage = 384;
                 }
 
-                PDefender->addHP(-Action->addEffectParam);
+                PDefender->takeDamage(Action->addEffectParam, PAttacker);
             }
             else if (enspell > 6 && enspell <= 8)
             {
@@ -1048,7 +922,7 @@ namespace battleutils
                     Action->addEffectMessage = 384;
                 }
 
-                PDefender->addHP(-Action->addEffectParam);
+                PDefender->takeDamage(Action->addEffectParam, PAttacker);
             }
             else if (enspell == ENSPELL_BLOOD_WEAPON)
             {
@@ -1072,7 +946,7 @@ namespace battleutils
                     Action->addEffectMessage = 384;
                 }
 
-                PDefender->addHP(-Action->addEffectParam);
+                PDefender->takeDamage(Action->addEffectParam, PAttacker);
             }
         }
         //check weapon for additional effects
@@ -1329,7 +1203,7 @@ namespace battleutils
                     damage = HandleStoneskin(PDefender, damage);
                     //set damage TODO: handle resi st/staff/day
                     Action->addEffectParam = damage;
-                    PDefender->addHP(-damage);
+                    PDefender->takeDamage(damage, PAttacker);
                 }
                 break;
             case 18699:{ //Earth Arrow
@@ -1351,7 +1225,7 @@ namespace battleutils
                     damage += (float)damage * ((float)PDefender->getMod(Mod::EARTHRES)/-100);
                     damage = HandleStoneskin(PDefender, damage);
                     Action->addEffectParam  = damage;
-                    PDefender->addHP(-damage);
+                    PDefender->takeDamage(damage, PAttacker);
                 }
                 break;
             case 18698:{ //Water Arrow
@@ -1372,7 +1246,7 @@ namespace battleutils
                     damage += (float)damage * ((float)PDefender->getMod(Mod::WATERRES)/-100);
                     damage = HandleStoneskin(PDefender, damage);
                     Action->addEffectParam  = damage;
-                    PDefender->addHP(-damage);
+                    PDefender->takeDamage(damage, PAttacker);
                 }
                 break;
             case 18153:{ //Holy Bolt
@@ -1393,7 +1267,7 @@ namespace battleutils
                     damage += (float)damage * ((float)PDefender->getMod(Mod::LIGHTRES)/-100);
                     damage = HandleStoneskin(PDefender, damage);
                     Action->addEffectParam  = damage;
-                    PDefender->addHP(-damage);
+                    PDefender->takeDamage(damage, PAttacker);
                 }
                 break;
             case 17324:{ //Lightning Arrow
@@ -1414,7 +1288,7 @@ namespace battleutils
                     damage += (float)damage * ((float)PDefender->getMod(Mod::THUNDERRES)/-100);
                     damage = HandleStoneskin(PDefender, damage);
                     Action->addEffectParam  = damage;
-                    PDefender->addHP(-damage);
+                    PDefender->takeDamage(damage, PAttacker);
                 }
                 break;
             case 17323:{ //Ice Arrow
@@ -1435,7 +1309,7 @@ namespace battleutils
                     damage += (float)damage * ((float)PDefender->getMod(Mod::ICERES)/-100);
                     damage = HandleStoneskin(PDefender, damage);
                     Action->addEffectParam  = damage;
-                    PDefender->addHP(-damage);
+                    PDefender->takeDamage(damage, PAttacker);
                 }
                 break;
             case 17327: // Grand knights Arrow
@@ -1463,7 +1337,7 @@ namespace battleutils
                     damage = HandleStoneskin(PDefender, damage);
 
                     Action->addEffectParam  = damage;
-                    PDefender->addHP(-damage);
+                    PDefender->takeDamage(damage, PAttacker);
                 }
                 break;
             }*/
@@ -1997,7 +1871,7 @@ namespace battleutils
         }
         damage = std::clamp(damage, -99999, 99999);
 
-        int32 corrected = PDefender->addHP(-damage);
+        int32 corrected = PDefender->takeDamage(damage, PAttacker);
         if (damage < 0)
             damage = -corrected;
 
@@ -2135,7 +2009,7 @@ namespace battleutils
     *																		*
     ************************************************************************/
 
-    int32 TakeWeaponskillDamage(CCharEntity* PChar, CBattleEntity* PDefender, int32 damage, uint8 slot, bool primary, float tpMultiplier, uint16 bonusTP, float targetTPMultiplier)
+    int32 TakeWeaponskillDamage(CCharEntity* PAttacker, CBattleEntity* PDefender, int32 damage, uint8 slot, bool primary, float tpMultiplier, uint16 bonusTP, float targetTPMultiplier)
     {
         bool isRanged = (slot == SLOT_AMMO || slot == SLOT_RANGED);
 
@@ -2147,28 +2021,28 @@ namespace battleutils
 
         if (!isRanged)
         {
-            damage = getOverWhelmDamageBonus(PChar, PDefender, (uint16)damage);
+            damage = getOverWhelmDamageBonus(PAttacker, PDefender, (uint16)damage);
         }
 
         HandleAfflatusMiseryDamage(PDefender, damage);
         damage = std::clamp(damage, -99999, 99999);
 
-        int32 corrected = PDefender->addHP(-damage);
+        int32 corrected = PDefender->takeDamage(damage, PAttacker);
         if (damage < 0)
             damage = -corrected;
 
         if (PDefender->objtype == TYPE_MOB)
         {
-            if (PChar->PMaster != nullptr)
+            if (PAttacker->PMaster != nullptr)
             {
-                PDefender->m_OwnerID.id = PChar->PMaster->id;
-                PDefender->m_OwnerID.targid = PChar->PMaster->targid;
+                PDefender->m_OwnerID.id = PAttacker->PMaster->id;
+                PDefender->m_OwnerID.targid = PAttacker->PMaster->targid;
                 PDefender->updatemask |= UPDATE_STATUS;
             }
             else
             {
-                PDefender->m_OwnerID.id = PChar->id;
-                PDefender->m_OwnerID.targid = PChar->targid;
+                PDefender->m_OwnerID.id = PAttacker->id;
+                PDefender->m_OwnerID.targid = PAttacker->targid;
                 PDefender->updatemask |= UPDATE_STATUS;
             }
         }
@@ -2180,7 +2054,7 @@ namespace battleutils
             PDefender->StatusEffectContainer->DelStatusEffectsByFlag(EFFECTFLAG_DAMAGE);
 
             // Check for bind breaking
-            BindBreakCheck(PChar, PDefender);
+            BindBreakCheck(PAttacker, PDefender);
 
             switch (PDefender->objtype)
             {
@@ -2189,9 +2063,9 @@ namespace battleutils
                     if (PDefender->PMaster != nullptr && PDefender->PMaster->objtype == TYPE_PC)
                         ((CPetEntity*)PDefender)->loc.zone->PushPacket(PDefender, CHAR_INRANGE, new CEntityUpdatePacket(PDefender, ENTITY_UPDATE, UPDATE_COMBAT));
 
-                    if (((CMobEntity*)PDefender)->m_HiPCLvl < PChar->GetMLevel())
+                    if (((CMobEntity*)PDefender)->m_HiPCLvl < PAttacker->GetMLevel())
                     {
-                        ((CMobEntity*)PDefender)->m_HiPCLvl = PChar->GetMLevel();
+                        ((CMobEntity*)PDefender)->m_HiPCLvl = PAttacker->GetMLevel();
                     }
 
                     break;
@@ -2205,29 +2079,29 @@ namespace battleutils
             }
 
             // try to interrupt spell
-            PDefender->TryHitInterrupt(PChar);
+            PDefender->TryHitInterrupt(PAttacker);
 
             int16 baseTp = 0;
 
             if (isRanged)
             {
-                int16 delay = PChar->GetRangedWeaponDelay(true);
+                int16 delay = PAttacker->GetRangedWeaponDelay(true);
                 baseTp = CalculateBaseTP((delay * 120) / 1000);
             }
             else
             {
-                int16 delay = PChar->GetWeaponDelay(true);
+                int16 delay = PAttacker->GetWeaponDelay(true);
 
-                if (PChar->m_Weapons[SLOT_SUB]->getDmgType() > 0 &&
-                    PChar->m_Weapons[SLOT_SUB]->getDmgType() < 4 &&
-                    PChar->m_Weapons[slot]->getSkillType() != SKILL_HAND_TO_HAND)
+                if (PAttacker->m_Weapons[SLOT_SUB]->getDmgType() > 0 &&
+                    PAttacker->m_Weapons[SLOT_SUB]->getDmgType() < 4 &&
+                    PAttacker->m_Weapons[slot]->getSkillType() != SKILL_HAND_TO_HAND)
                 {
                     delay /= 2;
                 }
 
                 float ratio = 1.0f;
 
-                if (PChar->m_Weapons[slot]->getSkillType() == SKILL_HAND_TO_HAND)
+                if (PAttacker->m_Weapons[slot]->getSkillType() == SKILL_HAND_TO_HAND)
                     ratio = 2.0f;
 
                 baseTp = (int16)(CalculateBaseTP((delay * 60) / 1000) / ratio);
@@ -2238,31 +2112,31 @@ namespace battleutils
             if (primary)
             // Calculate TP Return from WS
             {
-                standbyTp = ((int16)(((tpMultiplier * baseTp) + bonusTP) * (1.0f + 0.01f * (float)((PChar->getMod(Mod::STORETP) + getStoreTPbonusFromMerit(PChar))))));
+                standbyTp = ((int16)(((tpMultiplier * baseTp) + bonusTP) * (1.0f + 0.01f * (float)((PAttacker->getMod(Mod::STORETP) + getStoreTPbonusFromMerit(PAttacker))))));
             }
 
             //account for attacker's subtle blow which reduces the baseTP gain for the defender
-            float sBlowMult = ((100.0f - std::clamp((float)PChar->getMod(Mod::SUBTLE_BLOW), 0.0f, 50.0f)) / 100.0f);
+            float sBlowMult = ((100.0f - std::clamp((float)PAttacker->getMod(Mod::SUBTLE_BLOW), 0.0f, 50.0f)) / 100.0f);
 
             //mobs hit get basetp+30 whereas pcs hit get basetp/3
             if (PDefender->objtype == TYPE_PC)
-                PDefender->addTP((int16)(tpMultiplier * targetTPMultiplier * ((baseTp / 3) * sBlowMult * (1.0f + 0.01f * (float)((PDefender->getMod(Mod::STORETP) + getStoreTPbonusFromMerit(PChar))))))); //yup store tp counts on hits taken too!
+                PDefender->addTP((int16)(tpMultiplier * targetTPMultiplier * ((baseTp / 3) * sBlowMult * (1.0f + 0.01f * (float)((PDefender->getMod(Mod::STORETP) + getStoreTPbonusFromMerit(PAttacker))))))); //yup store tp counts on hits taken too!
             else
                 PDefender->addTP((int16)(tpMultiplier * targetTPMultiplier * ((baseTp + 30) * sBlowMult * (1.0f + 0.01f * (float)PDefender->getMod(Mod::STORETP))))); //subtle blow also reduces the "+30" on mob tp gain
         }
         else if (PDefender->objtype == TYPE_MOB)
-            ((CMobEntity*)PDefender)->PEnmityContainer->UpdateEnmityFromDamage(PChar, 0);
+            ((CMobEntity*)PDefender)->PEnmityContainer->UpdateEnmityFromDamage(PAttacker, 0);
 
         if (!isRanged)
-            PChar->StatusEffectContainer->DelStatusEffectsByFlag(EFFECTFLAG_ATTACK);
+            PAttacker->StatusEffectContainer->DelStatusEffectsByFlag(EFFECTFLAG_ATTACK);
 
         // Apply TP
-        PChar->addTP(std::max((PChar->getMod(Mod::SAVETP)), standbyTp));
+        PAttacker->addTP(std::max((PAttacker->getMod(Mod::SAVETP)), standbyTp));
 
         // Remove Hagakure Effect if present
-        if (PChar->StatusEffectContainer->HasStatusEffect(EFFECT_HAGAKURE))
+        if (PAttacker->StatusEffectContainer->HasStatusEffect(EFFECT_HAGAKURE))
         {
-            PChar->StatusEffectContainer->DelStatusEffect(EFFECT_HAGAKURE);
+            PAttacker->StatusEffectContainer->DelStatusEffect(EFFECT_HAGAKURE);
         }
 
         return damage;
@@ -3186,7 +3060,7 @@ namespace battleutils
         }
         damage = std::clamp(damage, -99999, 99999);
 
-        PDefender->addHP(-damage);
+        PDefender->takeDamage(damage, PAttacker);
 
         if (PAttacker->PMaster != nullptr)
         {
@@ -4098,6 +3972,10 @@ namespace battleutils
             {
                 charmerBSTlevel = charmerBRDlevel;
             }
+            if (charmerBSTlevel > charmerLvl)
+            {
+                charmerBSTlevel = charmerLvl;
+            }
         }
         else if (PCharmer->objtype == TYPE_MOB)
         {
@@ -4257,6 +4135,7 @@ namespace battleutils
         resist = 1.0f + ( floor( 256.0f * ( PDefender->getMod(Mod::DMGPHYS) / 100.0f ) ) / 256.0f )
                       + ( floor( 256.0f * ( PDefender->getMod(Mod::DMG)     / 100.0f ) ) / 256.0f );
         resist = std::clamp(resist, 0.5f, 1.5f); //assuming if its floored at .5f its capped at 1.5f but who's stacking +dmgtaken equip anyway???
+        resist += floor(PDefender->getMod(Mod::DMGPHYS_II) / 100.f); // Add Burtgang reduction after cap
         damage = (int32)(damage * resist);
 
         if (dsprand::GetRandomNumber(100) < PDefender->getMod(Mod::ABSORB_DMG_CHANCE) ||
@@ -5525,4 +5404,3 @@ namespace battleutils
         }
     }
 };
-
