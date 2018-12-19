@@ -1781,10 +1781,12 @@ namespace battleutils
         }
         else
         {
+            uint16 damageType = PAttacker->m_Weapons[slot]->getDmgType();
+
             if (isRanged)
-                damage = RangedDmgTaken(PDefender, damage);
+                damage = RangedDmgTaken(PDefender, damage, damageType);
             else
-                damage = PhysicalDmgTaken(PDefender, damage);
+                damage = PhysicalDmgTaken(PDefender, damage, damageType);
 
             //absorb mods are handled in the above functions, but they do not affect counters
             //this is a little hacky, but will work for now
@@ -1793,7 +1795,7 @@ namespace battleutils
 
             if (!isCounter || giveTPtoAttacker) // counters are always considered blunt (assuming h2h) damage, except retaliation (which is the only counter that gives TP to the attacker)
             {
-                switch (PAttacker->m_Weapons[slot]->getDmgType())
+                switch (damageType)
                 {
                     case DAMAGE_PIERCING: damage = (damage * (PDefender->getMod(Mod::PIERCERES))) / 1000; break;
                     case DAMAGE_SLASHING: damage = (damage * (PDefender->getMod(Mod::SLASHRES))) / 1000; break;
@@ -4082,7 +4084,7 @@ namespace battleutils
             damage = -damage;
         else
         {
-            damage = HandleSevereDamage(PDefender, damage);
+            damage = HandleSevereDamage(PDefender, damage, false);
             int16 absorbedMP = (int16)(damage * PDefender->getMod(Mod::ABSORB_DMG_TO_MP) / 100);
             if (absorbedMP > 0)
                 PDefender->addMP(absorbedMP);
@@ -4096,16 +4098,18 @@ namespace battleutils
         Mod absorb[8] = { Mod::FIRE_ABSORB, Mod::EARTH_ABSORB, Mod::WATER_ABSORB, Mod::WIND_ABSORB, Mod::ICE_ABSORB, Mod::LTNG_ABSORB, Mod::LIGHT_ABSORB, Mod::DARK_ABSORB };
         Mod nullarray[8] = { Mod::FIRE_NULL, Mod::EARTH_NULL, Mod::WATER_NULL, Mod::WIND_NULL, Mod::ICE_NULL, Mod::LTNG_NULL, Mod::LIGHT_NULL, Mod::DARK_NULL };
 
-        float resist = 1.0f + floor( 256.0f * ( PDefender->getMod(Mod::UDMGMAGIC) / 100.0f )  ) / 256.0f;
-        resist = std::max<float>(resist, 0);
+        float resist = 1.f + PDefender->getMod(Mod::UDMGMAGIC) / 100.f;
+        resist = std::max(resist, 0.f);
         damage = (int32)(damage * resist);
 
-        resist = 1.0f + ( floor( 256.0f * ( PDefender->getMod(Mod::DMGMAGIC) / 100.0f ) ) / 256.0f )
-                      + ( floor( 256.0f * ( PDefender->getMod(Mod::DMG)      / 100.0f ) ) / 256.0f );
-        resist = std::clamp(resist, 0.5f, 1.5f); //assuming if its floored at .5f its capped at 1.5f but who's stacking +dmgtaken equip anyway???
-        resist = resist + ( floor( 256.0f * ( PDefender->getMod(Mod::DMGMAGIC_II) / 100.0f ) ) / 256.0f );
-        resist = std::clamp(resist, 0.125f, 1.5f); //Total cap with MDT-% II included is 87.5%
+        resist = 1.f + PDefender->getMod(Mod::DMGMAGIC) / 100.f + PDefender->getMod(Mod::DMG) / 100.f;
+        resist = std::max(resist, 0.5f);
+        resist += PDefender->getMod(Mod::DMGMAGIC_II) / 100.f;
+        resist = std::max(resist, 0.125f); // Total cap with MDT-% II included is 87.5%
         damage = (int32)(damage * resist);
+
+        if (damage > 0 && PDefender->objtype == TYPE_PET && PDefender->getMod(Mod::AUTO_STEAM_JACKET) > 1)
+            damage = HandleSteamJacket(PDefender, damage, 5); // Special case for DAMAGE_MAGIC
 
         if (dsprand::GetRandomNumber(100) < PDefender->getMod(Mod::ABSORB_DMG_CHANCE) ||
             (element && dsprand::GetRandomNumber(100) < PDefender->getMod(absorb[element - 1])) ||
@@ -4116,7 +4120,7 @@ namespace battleutils
             damage = 0;
         else
         {
-            damage = HandleSevereDamage(PDefender, damage);
+            damage = HandleSevereDamage(PDefender, damage, false);
             int16 absorbedMP = (int16)(damage * PDefender->getMod(Mod::ABSORB_DMG_TO_MP) / 100);
             if (absorbedMP > 0)
                 PDefender->addMP(absorbedMP);
@@ -4126,17 +4130,22 @@ namespace battleutils
         return damage;
     }
 
-    int32 PhysicalDmgTaken(CBattleEntity* PDefender, int32 damage)
+    int32 PhysicalDmgTaken(CBattleEntity* PDefender, int32 damage, int16 damageType)
     {
-        float resist = 1.0f + floor( 256.0f * ( PDefender->getMod(Mod::UDMGPHYS) / 100.0f )  ) / 256.0f;
-        resist = std::max<float>(resist, 0);
+        float resist = 1.f + PDefender->getMod(Mod::UDMGPHYS) / 100.f;
+        resist = std::max(resist, 0.f);
         damage = (int32)(damage * resist);
 
-        resist = 1.0f + ( floor( 256.0f * ( PDefender->getMod(Mod::DMGPHYS) / 100.0f ) ) / 256.0f )
-                      + ( floor( 256.0f * ( PDefender->getMod(Mod::DMG)     / 100.0f ) ) / 256.0f );
-        resist = std::clamp(resist, 0.5f, 1.5f); //assuming if its floored at .5f its capped at 1.5f but who's stacking +dmgtaken equip anyway???
-        resist += floor(PDefender->getMod(Mod::DMGPHYS_II) / 100.f); // Add Burtgang reduction after cap
+        resist = 1.f + PDefender->getMod(Mod::DMGPHYS) / 100.f + PDefender->getMod(Mod::DMG) / 100.f;
+        resist = std::max(resist, 0.5f); // PDT caps at -50%
+        resist += PDefender->getMod(Mod::DMGPHYS_II) / 100.f; // Add Burtgang reduction after 50% cap. Extends cap to -68%
         damage = (int32)(damage * resist);
+
+        if (damage > 0 && PDefender->objtype == TYPE_PET && PDefender->getMod(Mod::AUTO_STEAM_JACKET) > 0)
+            damage = HandleSteamJacket(PDefender, damage, damageType);
+
+        if (damage > 0 && PDefender->objtype == TYPE_PET && PDefender->getMod(Mod::AUTO_EQUALIZER) > 0)
+            damage -= (int32)(damage / float(PDefender->GetMaxHP()) * (PDefender->getMod(Mod::AUTO_EQUALIZER) / 100.0f));
 
         if (dsprand::GetRandomNumber(100) < PDefender->getMod(Mod::ABSORB_DMG_CHANCE) ||
             dsprand::GetRandomNumber(100) < PDefender->getMod(Mod::PHYS_ABSORB))
@@ -4145,7 +4154,7 @@ namespace battleutils
             damage = 0;
         else
         {
-            damage = HandleSevereDamage(PDefender, damage);
+            damage = HandleSevereDamage(PDefender, damage, true);
             int16 absorbedMP = (int16)(damage * (PDefender->getMod(Mod::ABSORB_DMG_TO_MP) + PDefender->getMod(Mod::ABSORB_PHYSDMG_TO_MP)) / 100);
             if (absorbedMP > 0)
                 PDefender->addMP(absorbedMP);
@@ -4155,16 +4164,23 @@ namespace battleutils
         return damage;
     }
 
-    int32 RangedDmgTaken(CBattleEntity* PDefender, int32 damage)
+    int32 RangedDmgTaken(CBattleEntity* PDefender, int32 damage, int16 damageType)
     {
-        float resist = 1.0f + floor( 256.0f * ( PDefender->getMod(Mod::UDMGRANGE) / 100.0f )  ) / 256.0f;
-        resist = std::max<float>(resist, 0);
+        float resist = 1.0f + PDefender->getMod(Mod::UDMGRANGE) / 100.f;
+        resist = std::max(resist, 0.f);
         damage = (int32)(damage * resist);
 
-        resist = 1.0f + ( floor( 256.0f * ( PDefender->getMod(Mod::DMGRANGE) / 100.0f ) ) / 256.0f )
-                      + ( floor( 256.0f * ( PDefender->getMod(Mod::DMG)      / 100.0f ) ) / 256.0f );
-        resist = std::clamp(resist, 0.5f, 1.5f); //assuming if its floored at .5f its capped at 1.5f but who's stacking +dmgtaken equip anyway???
+        resist = 1.0f + PDefender->getMod(Mod::DMGRANGE) / 100.f + PDefender->getMod(Mod::DMG) / 100.f;
+        resist = std::max(resist, 0.5f);
         damage = (int32)(damage * resist);
+
+        if (damage > 0 && PDefender->objtype == TYPE_PET && PDefender->getMod(Mod::AUTO_STEAM_JACKET) > 0)
+            damage = HandleSteamJacket(PDefender, damage, damageType);
+
+        if (damage > 0 && PDefender->objtype == TYPE_PET && PDefender->getMod(Mod::AUTO_EQUALIZER) > 0)
+        {
+            damage -= (int32)(damage / float(PDefender->GetMaxHP()) * (PDefender->getMod(Mod::AUTO_EQUALIZER) / 100.0f));
+        }
 
         if (dsprand::GetRandomNumber(100) < PDefender->getMod(Mod::ABSORB_DMG_CHANCE) ||
             dsprand::GetRandomNumber(100) < PDefender->getMod(Mod::PHYS_ABSORB))
@@ -4173,13 +4189,32 @@ namespace battleutils
             damage = 0;
         else
         {
-            damage = HandleSevereDamage(PDefender, damage);
+            damage = HandleSevereDamage(PDefender, damage, true);
             int16 absorbedMP = (int16)(damage * (PDefender->getMod(Mod::ABSORB_DMG_TO_MP) + PDefender->getMod(Mod::ABSORB_PHYSDMG_TO_MP)) / 100);
             if (absorbedMP > 0)
                 PDefender->addMP(absorbedMP);
             damage = HandleFanDance(PDefender, damage);
         }
 
+        return damage;
+    }
+
+    int32 HandleSteamJacket(CBattleEntity* PDefender, int32 damage, int16 damageType)
+    {
+        uint32 steamJacketType = PDefender->GetLocalVar("steam_jacket_type");
+        int16 steamJacketHits = (int16)PDefender->GetLocalVar("steam_jacket_hits");
+
+        if (steamJacketType != damageType)
+        {
+            PDefender->SetLocalVar("steam_jacket_type", damageType);
+            steamJacketHits = 0;
+        }
+
+        steamJacketHits += 1;
+        PDefender->SetLocalVar("steam_jacket_hits", steamJacketHits);
+
+        if (steamJacketHits >= PDefender->getMod(Mod::AUTO_STEAM_JACKET))
+            return damage - (int32)(damage * (PDefender->getMod(Mod::AUTO_STEAM_JACKED_REDUCTION) / 100.0f));
         return damage;
     }
 
@@ -4331,9 +4366,17 @@ namespace battleutils
         return damage;
     }
 
-    int32 HandleSevereDamage(CBattleEntity* PDefender, int32 damage) {
+    int32 HandleSevereDamage(CBattleEntity* PDefender, int32 damage, bool isPhysical) {
         damage = HandleSevereDamageEffect(PDefender, EFFECT_MIGAWARI, damage, true);
-        // In the future, handle other Severe Damage Effects like Scherzo & Earthen Armor here
+        // In the future, handle other Severe Damage Effects like Earthen Armor here
+
+        if (isPhysical && PDefender->objtype == TYPE_PET && PDefender->getMod(Mod::AUTO_SCHURZEN) != 0 && damage >= PDefender->health.hp &&
+            ((CPetEntity*)PDefender)->PMaster->StatusEffectContainer->GetEffectsCount(EFFECT_EARTH_MANEUVER) >= 1)
+        {
+            damage = PDefender->health.hp - 1;
+            ((CPetEntity*)PDefender)->PMaster->StatusEffectContainer->DelStatusEffectSilent(EFFECT_EARTH_MANEUVER);
+        }
+
         return damage;
     }
 
