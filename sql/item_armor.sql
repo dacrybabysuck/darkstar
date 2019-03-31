@@ -2,7 +2,7 @@
 --
 -- Host: localhost    Database: dspdb
 -- ------------------------------------------------------
--- Server version	5.5.52-MariaDB-1ubuntu0.14.04.1
+-- Server version   5.5.52-MariaDB-1ubuntu0.14.04.1
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -1372,7 +1372,7 @@ INSERT INTO `item_armor` VALUES (11603,'charis_necklace',80,0,262144,0,0,0,512,0
 INSERT INTO `item_armor` VALUES (11604,'corvus_torque',79,0,66592,0,0,0,512,0);
 INSERT INTO `item_armor` VALUES (11605,'ziel_charm',80,0,4194303,0,0,0,512,0);
 INSERT INTO `item_armor` VALUES (11606,'arctiers_torque',80,0,2473969,0,0,0,512,0);
-INSERT INTO `item_armor` VALUES (11607,'artemis_medal',77,0,4194303,0,0,0,512,0);
+INSERT INTO `item_armor` VALUES (11607,'artemiss_medal',77,0,4194303,0,0,0,512,0);
 INSERT INTO `item_armor` VALUES (11608,'barcarolle_medal',78,0,512,0,0,0,512,0);
 INSERT INTO `item_armor` VALUES (11609,'shifting_necklace',79,0,4194303,0,0,0,512,0);
 INSERT INTO `item_armor` VALUES (11610,'lacono_necklace',79,0,4194303,0,0,0,512,0);
@@ -7046,7 +7046,7 @@ INSERT INTO `item_armor` VALUES (17314,'quake_grenade',32,0,2101409,29,0,0,8,4);
 INSERT INTO `item_armor` VALUES (17315,'riot_grenade',40,0,2101409,29,0,0,8,4);
 INSERT INTO `item_armor` VALUES (17316,'bomb_arm',5,0,2101409,29,0,0,8,4);
 INSERT INTO `item_armor` VALUES (17317,'gold_arrow',40,0,7665,0,0,0,8,0);
-INSERT INTO `item_armor` VALUES (17318,'wooden_arrow',1,0,7665,0,0,0,8,0);
+INSERT INTO `item_armor` VALUES (17318,'wooden_arrow',1,0,4194303,0,0,0,8,0);
 INSERT INTO `item_armor` VALUES (17319,'bone_arrow',7,0,7665,0,0,0,8,0);
 INSERT INTO `item_armor` VALUES (17320,'iron_arrow',14,0,7665,0,0,0,8,0);
 INSERT INTO `item_armor` VALUES (17321,'silver_arrow',24,0,7665,0,0,0,8,0);
@@ -7064,7 +7064,7 @@ INSERT INTO `item_armor` VALUES (17332,'fang_arrow',15,0,7665,0,0,0,8,0);
 INSERT INTO `item_armor` VALUES (17333,'rune_arrow',70,0,581625,0,0,0,8,0);
 INSERT INTO `item_armor` VALUES (17334,'platinum_arrow',50,0,7665,0,0,0,8,0);
 INSERT INTO `item_armor` VALUES (17335,'rusty_bolt',1,0,1024,0,0,0,8,0);
-INSERT INTO `item_armor` VALUES (17336,'crossbow_bolt',1,0,1153,0,0,0,8,0);
+INSERT INTO `item_armor` VALUES (17336,'crossbow_bolt',1,0,4194303,0,0,0,8,0);
 INSERT INTO `item_armor` VALUES (17337,'mythril_bolt',40,0,1153,0,0,0,8,0);
 INSERT INTO `item_armor` VALUES (17338,'darksteel_bolt',52,0,1153,0,0,0,8,0);
 INSERT INTO `item_armor` VALUES (17339,'bronze_bolt',1,0,1153,0,0,0,8,0);
@@ -7147,7 +7147,7 @@ INSERT INTO `item_armor` VALUES (17415,'shellbuster',48,0,4194303,110,0,0,3,0);
 INSERT INTO `item_armor` VALUES (17416,'arcana_breaker',54,0,1048580,113,0,0,3,0);
 INSERT INTO `item_armor` VALUES (17417,'rabbit_stick',5,0,4194303,228,0,0,3,0);
 INSERT INTO `item_armor` VALUES (17418,'moonlight_wand',15,0,4194303,228,0,0,3,0);
-INSERT INTO `item_armor` VALUES (17419,'artemis_wand',25,0,4194303,228,0,0,3,0);
+INSERT INTO `item_armor` VALUES (17419,'artemiss_wand',25,0,4194303,228,0,0,3,0);
 INSERT INTO `item_armor` VALUES (17420,'selenes_wand',35,0,4194303,228,0,0,3,0);
 INSERT INTO `item_armor` VALUES (17421,'moonwatch_wand',45,0,4194303,228,0,0,3,0);
 INSERT INTO `item_armor` VALUES (17422,'blessed_hammer',41,0,4,115,0,0,3,0);
