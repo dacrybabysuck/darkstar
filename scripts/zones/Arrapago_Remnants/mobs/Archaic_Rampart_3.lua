@@ -1,6 +1,6 @@
 -----------------------------------
--- Area: Archaic Rampart
---  MOB: Arrapago Remnants
+-- Area: Arrapago Remnants
+--  Mob: Archaic Rampart
 -----------------------------------
 mixins = {require("scripts/mixins/families/rampart")}
 local ID = require("scripts/zones/Arrapago_Remnants/IDs")
@@ -8,8 +8,6 @@ require("scripts/globals/instance")
 require("scripts/globals/status")
 -----------------------------------
 function onMobSpawn(mob)
-    local instance = mob:getInstance()
-    mob:setLocalVar("swapTime", os.time())
 end
 
 function onMobFight(mob,target)
@@ -20,7 +18,7 @@ function onMobFight(mob,target)
     local PET2 = instance:getEntity(bit.band((mob:getID() +2), 0xFFF), dsp.objType.MOB)
     local PET3 = instance:getEntity(bit.band((mob:getID() +3), 0xFFF), dsp.objType.MOB)
 
-    
+
     if os.time() - popTime > 15 then
         if (not PET1:isSpawned()) then
             PET1:setSpawn(POS.x, POS.y, POS.z, POS.rot)

@@ -1,6 +1,6 @@
 -----------------------------------
--- Area: Archaic Rampart
---  MOB: Arrapago Remnants
+-- Area: Arrapago Remnants
+--  Mob: Archaic Rampart
 -----------------------------------
 mixins = {require("scripts/mixins/families/rampart")}
 local ID = require("scripts/zones/Arrapago_Remnants/IDs")
@@ -8,8 +8,6 @@ require("scripts/globals/instance")
 require("scripts/globals/status")
 -----------------------------------
 function onMobSpawn(mob)
-    local instance = mob:getInstance()
-    mob:setLocalVar("swapTime", os.time())
 end
 
 function onMobFight(mob,target)
