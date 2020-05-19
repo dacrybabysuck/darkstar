@@ -194,6 +194,7 @@ public:
     int32 createShop(lua_State*);            // Prepare the container for work of shop ??
     int32 addShopItem(lua_State*);           // Adds item to shop container (16 max)
     int32 getCurrentGPItem(lua_State*);      // Gets current GP item id and max points
+    int32 breakLinkshell(lua_State*);        // Breaks all pearls/sacks
 
     // Trading
     int32 getContainerSize(lua_State*);      // Gets the current capacity of a container
@@ -573,6 +574,7 @@ public:
     int32 getWSSkillchainProp(lua_State* L);    // returns weapon skill's skillchain properties (up to 3)
 
     int32 takeWeaponskillDamage(lua_State* L);
+    int32 takeSpellDamage(lua_State* L);
 
     // Pets and Automations
     int32 spawnPet(lua_State*);              // Calls Pet

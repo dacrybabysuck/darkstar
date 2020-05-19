@@ -45,6 +45,7 @@
 #include "../instance.h"
 #include "../item_container.h"
 #include "../latent_effect_container.h"
+#include "../linkshell.h"
 #include "../map.h"
 #include "../message.h"
 #include "../mob_modifier.h"
@@ -3425,23 +3426,23 @@ inline int32 CLuaBaseEntity::addItem(lua_State *L)
             lua_pushboolean(L, 1);
             return 1;
         }
+
         uint16 id = (uint16)lua_tointeger(L, -1);
         lua_getfield(L, 1, "quantity");
-        uint32 quantity = (uint32)lua_tointeger(L, -1);
+        int32 quantity = (int32)lua_tointeger(L, -1);
         if (quantity == 0) quantity = 1;
         lua_pop(L, 2);
 
-        if (PChar->getStorage(LOC_INVENTORY)->GetFreeSlotsCount() != 0)
+        while  (PChar->getStorage(LOC_INVENTORY)->GetFreeSlotsCount() != 0 && quantity > 0)
         {
-            CItem* PItem = itemutils::GetItem(id);
-
-            if (PItem != nullptr)
+            if (CItem* PItem = itemutils::GetItem(id))
             {
                 PItem->setQuantity(quantity);
+                quantity -= PItem->getStackSize();
 
                 lua_getfield(L, 1, "silent");
                 bool silent = false;
-                if (!lua_isnil(L,-1))
+                if (!lua_isnil(L, -1))
                 {
                     silent = lua_toboolean(L, -1);
                 }
@@ -3460,11 +3461,11 @@ inline int32 CLuaBaseEntity::addItem(lua_State *L)
                     uint16 trial = (uint16)lua_tointeger(L, -1);
                     if (trial != 0) ((CItemEquipment*)PItem)->setTrialNumber(trial);
                     lua_getfield(L, 1, "augments");
-                    if (lua_istable(L,-1))
+                    if (lua_istable(L, -1))
                     {
                         auto table = lua_gettop(L);
                         lua_pushnil(L);
-                        while (lua_next(L,table) != 0)
+                        while (lua_next(L, table) != 0)
                         {
                             uint16 augid = (uint16)lua_tointeger(L, -2);
                             uint8 augval = (uint8)lua_tointeger(L, -1);
@@ -3475,14 +3476,15 @@ inline int32 CLuaBaseEntity::addItem(lua_State *L)
                     lua_pop(L, 2);
                 }
                 SlotID = charutils::AddItem(PChar, LOC_INVENTORY, PItem, silent);
+                if (SlotID == ERROR_SLOTID)
+                    break;
             }
             else
             {
                 ShowWarning(CL_YELLOW"charplugin::AddItem: Item <%i> is not found in a database\n" CL_RESET, id);
+                break;
             }
         }
-        lua_pushboolean(L, (SlotID != ERROR_SLOTID));
-        return 1;
     }
     else
     {
@@ -3496,7 +3498,7 @@ inline int32 CLuaBaseEntity::addItem(lua_State *L)
 
         bool silence = false;
         uint16 itemID = (uint16)lua_tointeger(L, 1);
-        uint32 quantity = 1;
+        int32 quantity = 1;
         uint16 augment0 = 0; uint8 augment0val = 0;
         uint16 augment1 = 0; uint8 augment1val = 0;
         uint16 augment2 = 0; uint8 augment2val = 0;
@@ -3504,12 +3506,12 @@ inline int32 CLuaBaseEntity::addItem(lua_State *L)
         uint16 trialNumber = 0;
 
         if (!lua_isnil(L, 2) && lua_isboolean(L, 2))
-            silence = (uint32)lua_toboolean(L, 2);
+            silence = lua_toboolean(L, 2);
         else if (!lua_isnil(L, 2) && lua_isnumber(L, 2))
         {
-            quantity = (uint32)lua_tointeger(L, 2);
+            quantity = (int32)lua_tointeger(L, 2);
             if (!lua_isnil(L, 3) && lua_isboolean(L, 3))
-                silence = (uint32)lua_toboolean(L, 3);
+                silence = lua_toboolean(L, 3);
         }
 
         if (!lua_isnil(L, 3) && lua_isnumber(L, 3))
@@ -3532,13 +3534,12 @@ inline int32 CLuaBaseEntity::addItem(lua_State *L)
         if (!lua_isnil(L, 11) && lua_isnumber(L, 11))
             trialNumber = (uint16)lua_tointeger(L, 11);
 
-        if (PChar->getStorage(LOC_INVENTORY)->GetFreeSlotsCount() != 0 && quantity != 0)
+        while (PChar->getStorage(LOC_INVENTORY)->GetFreeSlotsCount() != 0 && quantity > 0)
         {
-            CItem* PItem = itemutils::GetItem(itemID);
-
-            if (PItem != nullptr)
+            if (CItem* PItem = itemutils::GetItem(itemID))
             {
                 PItem->setQuantity(quantity);
+                quantity -= PItem->getStackSize();
 
                 if (PItem->isType(ITEM_EQUIPMENT))
                 {
@@ -3549,16 +3550,20 @@ inline int32 CLuaBaseEntity::addItem(lua_State *L)
                     if (trialNumber != 0) ((CItemEquipment*)PItem)->setTrialNumber(trialNumber);
                 }
                 SlotID = charutils::AddItem(PChar, LOC_INVENTORY, PItem, silence);
+
+                // Paranoid check
+                if (SlotID == ERROR_SLOTID)
+                    break;
             }
             else
             {
                 ShowWarning(CL_YELLOW"charplugin::AddItem: Item <%i> is not found in a database\n" CL_RESET, itemID);
+                break;
             }
         }
-        lua_pushboolean(L, (SlotID != ERROR_SLOTID));
-        return 1;
     }
-    lua_pushboolean(L, false);
+
+    lua_pushboolean(L, (SlotID != ERROR_SLOTID));
     return 1;
 }
 
@@ -3827,6 +3832,44 @@ inline int32 CLuaBaseEntity::getCurrentGPItem(lua_State* L)
     lua_pushinteger(L, GPItem.second);
 
     return 2;
+}
+
+/************************************************************************
+*  Function: breakLinkshell()
+*  Purpose : Breaks linkshell and all pearls/sacks
+*  Example : player:breakLinkshell(LSname)
+*  Notes   : Used by GMs to break a linkshell
+************************************************************************/
+
+inline int32 CLuaBaseEntity::breakLinkshell(lua_State* L)
+{
+    DSP_DEBUG_BREAK_IF(lua_isnil(L, 1) || !lua_isstring(L, 1));
+
+    auto lsname = lua_tostring(L, 1);
+    bool found = false;
+
+    int32 ret = Sql_Query(SqlHandle, "SELECT broken, linkshellid FROM linkshells WHERE name = '%s'", lsname);
+	if( ret != SQL_ERROR && Sql_NumRows(SqlHandle) != 0 && Sql_NextRow(SqlHandle) == SQL_SUCCESS)
+    {
+        uint8 broken = Sql_GetUIntData(SqlHandle,0);
+        if (broken)
+        {
+            lua_pushboolean(L, true);
+            return 1;
+        }
+        uint32 lsid = Sql_GetUIntData(SqlHandle,1);
+        CLinkshell* PLinkshell = linkshell::GetLinkshell(lsid);
+        if (!PLinkshell)
+            PLinkshell = linkshell::LoadLinkshell(lsid);
+        int8 EncodedName[16];
+        EncodeStringLinkshell((int8*)lsname, EncodedName);
+        PLinkshell->BreakLinkshell(EncodedName, true);
+        linkshell::UnloadLinkshell(lsid);
+        found = true;
+    }
+
+    lua_pushboolean(L, found);
+    return 1;
 }
 
 /************************************************************************
@@ -6699,7 +6742,7 @@ inline int32 CLuaBaseEntity::addExp(lua_State *L)
 
     DSP_DEBUG_BREAK_IF(lua_isnil(L, 1) || !lua_isnumber(L, 1));
 
-    charutils::AddExperiencePoints(false, (CCharEntity*)m_PBaseEntity, m_PBaseEntity, (uint32)lua_tointeger(L, 1), 0, false);
+    charutils::AddExperiencePoints(false, (CCharEntity*)m_PBaseEntity, m_PBaseEntity, (uint32)lua_tointeger(L, 1));
     return 0;
 }
 
@@ -8928,7 +8971,7 @@ inline int32 CLuaBaseEntity::checkKillCredit(lua_State *L)
     int maxDiff = (!lua_isnil(L, 2) && lua_isnumber(L, 2)) ? (int)lua_tonumber(L, 2) : 15;
     float range = (!lua_isnil(L, 3) && lua_isnumber(L, 3)) ? (float)lua_tonumber(L, 3) : 100;
 
-    if (charutils::GetRealExp(PMob->m_HiPCLvl, PMob->GetMLevel()) && distance(PMob->loc.p, PChar->loc.p) < range && lvlDiff < maxDiff)
+    if (charutils::CheckMob(PMob->m_HiPCLvl, PMob->GetMLevel()) > EMobDifficulty::TooWeak && distance(PMob->loc.p, PChar->loc.p) < range && lvlDiff < maxDiff)
     {
         if (PChar->PParty && PChar->PParty->GetSyncTarget())
         {
@@ -11756,6 +11799,33 @@ int32 CLuaBaseEntity::takeWeaponskillDamage(lua_State* L)
 }
 
 /************************************************************************
+*  Function: int32 TakeSpellDamage()
+*  Purpose : Calls Battle Utils to calculate final spell damage against a foe
+*  Example : target:takeSpellDamage(caster, spell, finaldmg, attackType, damageType)
+*  Notes   : Global function of same name in bluemagic.lua, calls this member function from within
+************************************************************************/
+
+int32 CLuaBaseEntity::takeSpellDamage(lua_State* L)
+{
+    DSP_DEBUG_BREAK_IF(m_PBaseEntity == nullptr);
+    DSP_DEBUG_BREAK_IF(lua_isnil(L, 1) || !lua_isuserdata(L, 1));
+    DSP_DEBUG_BREAK_IF(lua_isnil(L, 2) || !lua_isuserdata(L, 2));
+    DSP_DEBUG_BREAK_IF(lua_isnil(L, 3) || !lua_isnumber(L, 3));
+    DSP_DEBUG_BREAK_IF(lua_isnil(L, 3) || !lua_isnumber(L, 4));
+    DSP_DEBUG_BREAK_IF(lua_isnil(L, 3) || !lua_isnumber(L, 5));
+
+
+    auto PChar = static_cast<CCharEntity*>(Lunar<CLuaBaseEntity>::check(L, 1)->m_PBaseEntity);
+    auto PSpell = Lunar<CLuaSpell>::check(L, 2)->GetSpell();
+    auto damage = (int32)lua_tointeger(L, 3);
+    ATTACKTYPE attackType = (ATTACKTYPE)lua_tointeger(L, 4);
+    DAMAGETYPE damageType = (DAMAGETYPE)lua_tointeger(L, 5);
+
+    lua_pushinteger(L, (lua_Integer)battleutils::TakeSpellDamage(static_cast<CBattleEntity*>(m_PBaseEntity), PChar, PSpell, damage, attackType, damageType));
+    return 1;
+}
+
+/************************************************************************
 *  Function: spawnPet()
 *  Purpose : Spawns a pet if a few correct conditions are met
 *  Example : caster:spawnPet(PET_CARBUNCLE)
@@ -14056,6 +14126,7 @@ Lunar<CLuaBaseEntity>::Register_t CLuaBaseEntity::methods[] =
     LUNAR_DECLARE_METHOD(CLuaBaseEntity,createShop),
     LUNAR_DECLARE_METHOD(CLuaBaseEntity,addShopItem),
     LUNAR_DECLARE_METHOD(CLuaBaseEntity,getCurrentGPItem),
+    LUNAR_DECLARE_METHOD(CLuaBaseEntity,breakLinkshell),
 
     // Trading
     LUNAR_DECLARE_METHOD(CLuaBaseEntity,getContainerSize),
@@ -14437,6 +14508,7 @@ Lunar<CLuaBaseEntity>::Register_t CLuaBaseEntity::methods[] =
     LUNAR_DECLARE_METHOD(CLuaBaseEntity,getWSSkillchainProp),
 
     LUNAR_DECLARE_METHOD(CLuaBaseEntity,takeWeaponskillDamage),
+    LUNAR_DECLARE_METHOD(CLuaBaseEntity,takeSpellDamage),
 
     // Pets and Automations
     LUNAR_DECLARE_METHOD(CLuaBaseEntity,spawnPet),

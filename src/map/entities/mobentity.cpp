@@ -669,6 +669,17 @@ void CMobEntity::OnMobSkillFinished(CMobSkillState& state, action_t& action)
             PTarget->PAI->EventHandler.triggerListener("WEAPONSKILL_TAKE", PTarget, this, PSkill->getID(), state.GetSpentTP(), &action);
         }
 
+        if (objtype == TYPE_PET && PMaster && PMaster->objtype == TYPE_PC )
+        {
+            auto mob = dynamic_cast<CMobEntity *>(PTarget);
+            if (mob && !mob->CalledForHelp())
+            {
+                mob->m_OwnerID.id = PMaster->id;
+                mob->m_OwnerID.targid = PMaster->targid;
+                mob->updatemask |= UPDATE_STATUS; //This can go here because we only wanna call the updatemask if this happens
+            }
+        }
+
         if (msg == 0)
         {
             msg = PSkill->getMsg();
@@ -835,7 +846,7 @@ void CMobEntity::DropItems(CCharEntity* PChar)
 
     bool validZone = ((Pzone > 0 && Pzone < 39) || (Pzone > 42 && Pzone < 134) || (Pzone > 135 && Pzone < 185) || (Pzone > 188 && Pzone < 255));
 
-    if (validZone && charutils::GetRealExp(PChar->GetMLevel(), GetMLevel()) > 0)
+    if (validZone && charutils::CheckMob(PChar->GetMLevel(), GetMLevel()) > EMobDifficulty::TooWeak)
     {
         if (((PChar->StatusEffectContainer->HasStatusEffect(EFFECT_SIGNET) && conquest::GetRegionOwner(PChar->loc.zone->GetRegionID()) <= 2) ||
             (PChar->StatusEffectContainer->HasStatusEffect(EFFECT_SANCTION) && PChar->loc.zone->GetRegionID() >= 28 && PChar->loc.zone->GetRegionID() <= 32) ||
